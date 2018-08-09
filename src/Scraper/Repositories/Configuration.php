@@ -2,8 +2,8 @@
 
 namespace Softonic\LaravelIntelligentScraper\Scraper\Repositories;
 
-use Softonic\LaravelIntelligentScraper\Scraper\Application\Configurator;
 use Illuminate\Support\Facades\Log;
+use Softonic\LaravelIntelligentScraper\Scraper\Application\Configurator;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration as ConfigurationModel;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
 
@@ -26,7 +26,7 @@ class Configuration
 
     public function calculate(string $type)
     {
-        Log::warning("Calculating configuration");
+        Log::warning('Calculating configuration');
         $scrapedDataset = ScrapedDataset::withType($type)->get();
 
         if ($scrapedDataset->isEmpty()) {

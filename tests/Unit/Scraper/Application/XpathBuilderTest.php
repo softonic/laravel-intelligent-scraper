@@ -177,7 +177,7 @@ TEXT;
     {
         $this->assertEquals(
             '/html/body/img/@src',
-            $this->xpathBuilder->find($this->domElement, "http://test.com/image.jpg")
+            $this->xpathBuilder->find($this->domElement, 'http://test.com/image.jpg')
         );
     }
 
@@ -187,10 +187,10 @@ TEXT;
     public function whenTryToFindACommonPatternBetweenDifferentValuesItShouldReturnAnXpathWithCommonParts()
     {
         $values = [
-            "http://test.com/image1.jpg",
-            "http://test.com/image2.jpg",
-            "http://test.com/image3.jpg",
-            "http://test.com/image4.jpg",
+            'http://test.com/image1.jpg',
+            'http://test.com/image2.jpg',
+            'http://test.com/image3.jpg',
+            'http://test.com/image4.jpg',
         ];
 
         $this->assertEquals(
@@ -205,10 +205,10 @@ TEXT;
     public function whenTryToFindACommonPatternBetweenDifferentRegexpItShouldReturnAnXpathWithCommonParts()
     {
         $values = [
-            regexp("@^http://test.com/image1.jpg$@"),
-            regexp("@^http://test.com/image2.jpg$@"),
-            regexp("@^http://test.com/image3.jpg$@"),
-            regexp("@^http://test.com/image4.jpg$@"),
+            regexp('@^http://test.com/image1.jpg$@'),
+            regexp('@^http://test.com/image2.jpg$@'),
+            regexp('@^http://test.com/image3.jpg$@'),
+            regexp('@^http://test.com/image4.jpg$@'),
         ];
 
         $this->assertEquals(
@@ -220,7 +220,8 @@ TEXT;
     /**
      * @test
      */
-    public function whenTheInformationIsInAMetaItShouldTargetTheSpecificMeta(){
+    public function whenTheInformationIsInAMetaItShouldTargetTheSpecificMeta()
+    {
         $values = ['12345'];
 
         $this->assertEquals(

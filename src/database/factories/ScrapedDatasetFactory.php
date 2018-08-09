@@ -13,7 +13,7 @@
 
 use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+/* @var \Illuminate\Database\Eloquent\Factory $factory */
 $factory->define(ScrapedDataset::class, function (Faker\Generator $faker) {
     return [
         'url'  => $faker->url . $faker->randomDigit,

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 
 use Goutte\Client as GoutteClient;
@@ -29,6 +28,7 @@ class XpathFinder
 
         $result = [];
         foreach ($configs as $config) {
+            $subcrawler = collect();
             foreach ($config['xpaths'] as $xpath) {
                 $subcrawler = $crawler->filterXPath($xpath);
 

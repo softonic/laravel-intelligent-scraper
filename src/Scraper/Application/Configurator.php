@@ -6,6 +6,8 @@ use Goutte\Client;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration;
+use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
+use Symfony\Component\DomCrawler\Crawler;
 
 class Configurator
 {
@@ -26,7 +28,7 @@ class Configurator
     }
 
     /**
-     * @param $scrapedDataset
+     * @param ScrapedDataset[] $scrapedDataset
      *
      * @return \Illuminate\Support\Collection
      */
@@ -65,8 +67,8 @@ class Configurator
      *
      * If the data is not valid anymore, it is deleted from dataset.
      *
-     * @param $scrapedData
-     * @param $crawler
+     * @param ScrapedDataset $scrapedData
+     * @param Crawler $crawler
      *
      * @return array
      */
@@ -93,10 +95,10 @@ class Configurator
      *
      * Assign to a field all the possible Xpath.
      *
-     * @param        $result
+     * @param array  $result
      * @param string $type
      *
-     * @return array|\Illuminate\Support\Collection
+     * @return \Illuminate\Support\Collection
      */
     private function mergeConfiguration($result, string $type): Collection
     {

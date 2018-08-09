@@ -15,7 +15,8 @@ class ScraperProvider extends ServiceProvider
         );
 
         $this->mergeConfigFrom(
-            __DIR__ . '/config/scraper.php', 'scraper'
+            __DIR__ . '/config/scraper.php',
+            'scraper'
         );
 
         $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
@@ -24,7 +25,6 @@ class ScraperProvider extends ServiceProvider
     /**
      * Register any application services.
      *
-     * @return void
      */
     public function register()
     {

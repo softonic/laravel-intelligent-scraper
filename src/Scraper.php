@@ -2,11 +2,11 @@
 
 namespace Softonic\LaravelIntelligentScraper;
 
+use Psr\Log\LoggerInterface;
 use Softonic\LaravelIntelligentScraper\Scraper\Application\XpathFinder;
 use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\ConfigurationException;
 use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\MissingXpathValueException;
 use Softonic\LaravelIntelligentScraper\Scraper\Repositories\Configuration;
-use Psr\Log\LoggerInterface;
 
 class Scraper
 {
@@ -37,7 +37,7 @@ class Scraper
 
     /**
      * @throws \UnexpectedValueException If data cannot be extracted.
-     * @throws ConfigurationException If the scraper configuration cannot be loaded.
+     * @throws ConfigurationException    If the scraper configuration cannot be loaded.
      */
     public function getData(string $url, string $type): array
     {
