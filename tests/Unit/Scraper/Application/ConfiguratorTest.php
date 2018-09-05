@@ -5,6 +5,7 @@ namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 use Goutte\Client;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Log;
+use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\ConfigurationException;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
 use Tests\TestCase;
@@ -46,7 +47,7 @@ class ConfiguratorTest extends TestCase
 
         try {
             $configurator->configureFromDataset($posts);
-        } catch (\UnexpectedValueException $e) {
+        } catch (ConfigurationException $e) {
             $this->assertEquals('Field(s) "title,author" not found.', $e->getMessage());
             $this->assertDatabaseMissing('scraped_datasets', ['url' => 'https://test.c/123456789012']);
         }
@@ -102,7 +103,7 @@ class ConfiguratorTest extends TestCase
 
         try {
             $configurator->configureFromDataset($posts);
-        } catch (\UnexpectedValueException $e) {
+        } catch (ConfigurationException $e) {
             $this->assertEquals('Field(s) "author" not found.', $e->getMessage());
         }
     }
@@ -174,7 +175,7 @@ class ConfiguratorTest extends TestCase
 
         try {
             $configurator->configureFromDataset($posts);
-        } catch (\UnexpectedValueException $e) {
+        } catch (ConfigurationException $e) {
             $this->assertEquals('Field(s) "title,author" not found.', $e->getMessage());
         }
     }

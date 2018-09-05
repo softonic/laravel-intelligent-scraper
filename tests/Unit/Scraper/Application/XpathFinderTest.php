@@ -4,8 +4,6 @@ namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 
 use Goutte\Client;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Support\Facades\Event;
-use Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped;
 use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\MissingXpathValueException;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration;
 use Tests\TestCase;
@@ -13,13 +11,6 @@ use Tests\TestCase;
 class XpathFinderTest extends TestCase
 {
     use DatabaseMigrations;
-
-    public function setUp()
-    {
-        parent::setUp();
-
-        Event::fake();
-    }
 
     /**
      * @test
@@ -52,13 +43,6 @@ class XpathFinderTest extends TestCase
 
         $xpathFinder = new XpathFinder($client);
         $xpathFinder->extract('url', $config);
-
-        $this->whenEventIsNotSent();
-    }
-
-    private function whenEventIsNotSent()
-    {
-        Event::assertNotDispatched(Scraped::class);
     }
 
     /**
@@ -107,8 +91,6 @@ class XpathFinderTest extends TestCase
 
         $xpathFinder = new XpathFinder($client);
         $xpathFinder->extract('url', $config);
-
-        $this->whenEventIsNotSent();
     }
 
     /**
@@ -187,16 +169,5 @@ class XpathFinderTest extends TestCase
             ],
             $extractedData
         );
-
-        $this->whenEventIsSent('url', 'post', $extractedData);
-    }
-
-    private function whenEventIsSent($url, $type, $data): void
-    {
-        Event::assertDispatched(Scraped::class, function (Scraped $event) use ($url, $type, $data) {
-            return $event->data === $data
-                && $event->type === $type
-                && $event->url === $url;
-        });
     }
 }
