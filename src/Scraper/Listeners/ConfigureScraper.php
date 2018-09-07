@@ -16,6 +16,13 @@ use Softonic\LaravelIntelligentScraper\Scraper\Repositories\Configuration;
 class ConfigureScraper implements ShouldQueue
 {
     /**
+     * Specific queue for configure scrapper.
+     *
+     * @var string
+     */
+    public $queue = 'configure';
+
+    /**
      * @var Configuration
      */
     private $configuration;

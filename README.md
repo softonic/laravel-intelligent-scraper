@@ -181,6 +181,16 @@ $event->scrapeRequest->url  // Url scraped
 $event->scrapeRequest->type // Request type
 ```
 
+### Queue workers
+
+You need to workers, one for the default queue and another for the `configure` queue. The `configure` worker
+should be a single worker to avoid parallel configurations.
+
+```bash
+php artisan queue:work # As many as you want
+php artisan queue:work --queue=configure # Just one
+```
+
 ## Testing
 
 `softonic/laravel-intelligent-scraper` has a [PHPUnit](https://phpunit.de) test suite and a coding style compliance test suite using [PHP CS Fixer](http://cs.sensiolabs.org/).
