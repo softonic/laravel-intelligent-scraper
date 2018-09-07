@@ -5,7 +5,7 @@ namespace Softonic\LaravelIntelligentScraper\Scraper\Events;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class Scraped
+class ScrapeFailed
 {
     use Dispatchable, SerializesModels;
 
@@ -15,19 +15,12 @@ class Scraped
     public $scrapeRequest;
 
     /**
-     * @var array
-     */
-    public $data;
-
-    /**
      * Create a new event instance.
      *
      * @param ScrapeRequest $scrapeRequest
-     * @param array         $data
      */
-    public function __construct(ScrapeRequest $scrapeRequest, array $data)
+    public function __construct(ScrapeRequest $scrapeRequest)
     {
         $this->scrapeRequest = $scrapeRequest;
-        $this->data          = $data;
     }
 }

@@ -3,6 +3,7 @@
 namespace Softonic\LaravelIntelligentScraper\Scraper\Repositories;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Cache;
 use Softonic\LaravelIntelligentScraper\Scraper\Application\Configurator;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration as ConfigurationModel;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
@@ -85,23 +86,31 @@ class ConfigurationTest extends TestCase
             ],
         ]);
 
+        $config = collect([
+            ConfigurationModel::make([
+                'name'   => 'title',
+                'type'   => 'post',
+                'xpaths' => '//*[@id="title"]',
+            ]),
+            ConfigurationModel::make([
+                'name'   => 'author',
+                'type'   => 'post',
+                'xpaths' => '//*[@id="author"]',
+            ]),
+        ]);
+
+        Cache::shouldReceive('get')
+            ->with($this->getCacheKey())
+            ->andReturnNull();
+        Cache::shouldReceive('put')
+            ->with($this->getCacheKey(), $config, Configuration::CACHE_TTL);
+
         $configurator = \Mockery::mock(Configurator::class);
         $configurator->shouldReceive('configureFromDataset')
             ->withArgs(function ($posts) {
                 return 2 == $posts->count();
             })
-            ->andReturn(collect([
-                ConfigurationModel::make([
-                    'name'   => 'title',
-                    'type'   => 'post',
-                    'xpaths' => '//*[@id="title"]',
-                ]),
-                ConfigurationModel::make([
-                    'name'   => 'author',
-                    'type'   => 'post',
-                    'xpaths' => '//*[@id="author"]',
-                ]),
-            ]));
+            ->andReturn($config);
 
         $configuration = new Configuration($configurator);
         $configs       = $configuration->calculate('post');
@@ -144,6 +153,10 @@ class ConfigurationTest extends TestCase
             ],
         ]);
 
+        Cache::shouldReceive('get')
+            ->with($this->getCacheKey())
+            ->andReturnNull();
+
         $configurator = \Mockery::mock(Configurator::class);
         $configurator->shouldReceive('configureFromDataset')
             ->withArgs(function ($posts) {
@@ -156,5 +169,32 @@ class ConfigurationTest extends TestCase
 
         $configuration = new Configuration($configurator);
         $configuration->calculate('post');
+    }
+
+    /**
+     * @test
+     */
+    public function whenCalculateAfterAnotherCalculateItShouldUseThePrecalclatedConfig()
+    {
+        $configurator = \Mockery::mock(Configurator::class);
+        $configurator->shouldReceive('configureFromDataset')
+            ->never();
+
+        $config = collect('configuration');
+
+        Cache::shouldReceive('get')
+            ->with($this->getCacheKey())
+            ->andReturn($config);
+
+        $configuration = new Configuration($configurator);
+        $this->assertEquals(
+            $config,
+            $configuration->calculate('post')
+        );
+    }
+
+    private function getCacheKey()
+    {
+        return Configuration::class . '-config';
     }
 }

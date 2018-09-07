@@ -3,7 +3,6 @@
 namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 
 use Goutte\Client as GoutteClient;
-use Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped;
 use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\MissingXpathValueException;
 
 class XpathFinder
@@ -48,8 +47,6 @@ class XpathFinder
                 return $node->text();
             });
         }
-
-        event(new Scraped($url, $configs[0]['type'], $result));
 
         return $result;
     }

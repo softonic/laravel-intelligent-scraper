@@ -5,6 +5,7 @@ namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 use Goutte\Client;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\ConfigurationException;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
 use Symfony\Component\DomCrawler\Crawler;
@@ -68,7 +69,7 @@ class Configurator
      * If the data is not valid anymore, it is deleted from dataset.
      *
      * @param ScrapedDataset $scrapedData
-     * @param Crawler $crawler
+     * @param Crawler        $crawler
      *
      * @return array
      */
@@ -130,7 +131,7 @@ class Configurator
             $fieldsExpected = array_keys($data);
 
             $fieldsMissing = implode(',', array_diff($fieldsExpected, $fieldsFound));
-            throw new \UnexpectedValueException("Field(s) \"{$fieldsMissing}\" not found.", 0);
+            throw new ConfigurationException("Field(s) \"{$fieldsMissing}\" not found.", 0);
         }
     }
 }

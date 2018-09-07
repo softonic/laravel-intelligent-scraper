@@ -27,7 +27,8 @@ php artisan vendor:publish --provider="Softonic\LaravelIntelligentScraper\Scrape
 There are two different options for the initial setup. The package can be 
 [configured using datasets](#configuration-based-in-dataset) or 
 [configured using Xpath](#configuration-based-in-xpath). Both ways produces the same result but 
-depending on your Xpath knowledge you could prefer one or other.
+depending on your Xpath knowledge you could prefer one or other. We recommend to use the
+[configured using Xpath](#configuration-based-in-xpath) approach.
 
 ### Configuration based in dataset
 
@@ -99,7 +100,7 @@ ScrapedDataset::create([
 In this dataset we want that the text `My title` to be labeled as title and we also have a list of images that we want 
 to be labeled as images. With this we have the flexibility to pick items one by one or in lists.
 
-Sometimes we want to label some text that it is not clean in the HTML because it could include insivible characters like
+Sometimes we want to label some text that it is not clean in the HTML because it could include invisible characters like
 `\r\n`. To avoid to deal with that, the dataset allows you to add regular expressions.
 
 Example with `body` field as regexp:
@@ -110,6 +111,7 @@ use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
 
 ScrapedDataset::create([
     'url'  => 'https://test.c/p/my-objective',
+    'type' => 'Item-definition-1',
     'data' => [
         'title'     => 'My title',
         'body'      => regexp('/^Body starts here, but it is do long that.*$/si'),
@@ -154,32 +156,40 @@ specific page, you you can write a list of Xpath that will be checked in order g
 
 ## Usage
 
-After configure the scraper, you just need to execute it like:
+After configure the scraper, you will be able to request an specific scrape using the `scraoe` helper
 ```php
 <?php 
-$scraper = resolve(\Softonic\LaravelIntelligentScraper\Scraper\Scraper::class);
-$data = $scraper->getData('https://test.c/p/my-objective', 'Item-definition-1');
 
-/**
- * Item-definition-1 defined as 3 fields tagged as: title, body and images 
- */
-echo var_export($data);
-/**
- * Output:
- * [
- *      'title' => ['My title'].
- *      'body' => ['This is the body content I want to get'],
- *      'images' => [
- *          'https://test.c/images/1.jpg',
- *          'https://test.c/images/2.jpg',
- *          'https://test.c/images/3.jpg',
- *      ],
- * ]
- */
+scrape('https://test.c/p/my-objective', 'Item-definition-1');
+```
 
+The scrape will produce a `\Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped` event if all worked as expected.
+So attach a listener to that event to receive the data.
+
+```php
+$event->scrapeRequest->url  // Url scraped
+$event->scrapeRequest->type // Request type
+$event->data // Contains all the data in a [ 'fieldName' => 'value' ] format.
 ```
 
 All the output fields are arrays that can contain one or more results.
+
+If the scrape fails a `\Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeFailed` event is fired with the
+scrape request information.
+```php
+$event->scrapeRequest->url  // Url scraped
+$event->scrapeRequest->type // Request type
+```
+
+### Queue workers
+
+You need to workers, one for the default queue and another for the `configure` queue. The `configure` worker
+should be a single worker to avoid parallel configurations.
+
+```bash
+php artisan queue:work # As many as you want
+php artisan queue:work --queue=configure # Just one
+```
 
 ## Testing
 
@@ -201,49 +211,86 @@ $ docker-compose run psysh
 The scraper is auto configurable, but needs an initial dataset or add a configuration. 
 The dataset tells the configurator which data do you want and how to label it.
 
-![Scrape process](./docs/images/diagram.png "Scrape process")
+There are three services that have unique responsibilities and are connected using the event system.
+### Scrape
 
-To be reconfigurable and conserve the dataset freshness the scraper store the latest data scraped.
+It is fired when the system receive a `\Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeRequest` event. It
+can be done using our `scrape($url, $type)` helper function.
+
+![Scrape process](./docs/images/scrape_diagram.png "Scrape process")
 
 ```
 # Powered by https://code2flow.com/app
-function calculate configuration {
-  if(!Has dataset?) {
-    goto fail;
-  }
-  Extract configuration using dataset;
-  if(!Has extracted configuration?) {
-    goto fail;
-  }
-}
-
-Scrape url 'https://test.c/p/my-onjective' using 'Item-definition-1';
+Scrape Request 'https://test.c/p/my-onjective' using 'Item-definition-1';
 try {
   load configuration;
 }
 catch(Missing config) {
-  call calculate configuration;
+  goto fail;
 }
 
 extract data using configuration;
 // It could be produced by old configuration
 if(Error extracting data) {
-  call calculate configuration;
+  goto fail
 }
+
+fire Scraped Event;
+return;
+
+fail:
+fire InvalidConfiguration Event;
+```
+
+
+### Update dataset
+
+To be reconfigurable and conserve the dataset freshness the scraper store the latest data scraped automatically.
+
+![Updatge dataset process](./docs/images/update_dataset_diagram.png "Update dataset process")
+
+```
+# Powered by https://code2flow.com/app
+Receive Scraped event;
+Remove oldest scraped data;
+Store scraped data;
+Scrape dataset updated;
+```
+
+### Configure Scraper
+
+If a InvalidConfiguration event is fired, the system tries to calculate a new configuration to get the information from
+ScrapeRequest.
+
+![Configuration process](./docs/images/configure_diagram.png "Configuration process")
+
+```
+# Powered by https://code2flow.com/app
+Invalid Configuration for ScrapeRequest;
+
+try {
+  calculate configuration;
+}
+catch(Cannot be reconfigured) {
+  goto fail;
+}
+
 extract data using configuration;
-// It could be produced because the dataset does not have all the page variations
 if(Error extracting data) {
   goto fail;
 }
 
-goto success
-
-fail:
-No scraped data;
-return;
-success:
+Store new configuerion;
 Scraped data;
+return;
+fail:
+Fire ScrapeFailed Event;
+No scraped data;
 ```
+
+This process could produce two different events:
+* Scraped: All worked as expected and the page was scraped
+* ScrapeFailed: The scrape couldn't be done after recalculate config, so we need a manual configuration action to fix it.
 
 ## License
 

@@ -4,6 +4,7 @@ namespace Softonic\LaravelIntelligentScraper\Scraper\Listeners;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped;
+use Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeRequest;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
 
 class UpdateDatasetTest extends \Tests\TestCase
@@ -36,7 +37,7 @@ class UpdateDatasetTest extends \Tests\TestCase
             'category' => ['Entertainment'],
         ];
 
-        $this->updateDataset->handle(new Scraped($dataset->url, 'post', $data));
+        $this->updateDataset->handle(new Scraped(new ScrapeRequest($dataset->url, 'post'), $data));
 
         $this->assertEquals($data, ScrapedDataset::where('url', $dataset->url)->first()->toArray()['data']);
         $this->assertEquals(2, ScrapedDataset::all()->count());
@@ -57,7 +58,7 @@ class UpdateDatasetTest extends \Tests\TestCase
             'category' => ['Entertainment'],
         ];
 
-        $this->updateDataset->handle(new Scraped($url, 'post', $data));
+        $this->updateDataset->handle(new Scraped(new ScrapeRequest($url, 'post'), $data));
 
         $this->assertEquals($data, ScrapedDataset::where('url', $url)->first()->toArray()['data']);
         $this->assertEquals(3, ScrapedDataset::all()->count());
@@ -78,7 +79,7 @@ class UpdateDatasetTest extends \Tests\TestCase
             'author' => ['Jhon Doe'],
         ];
 
-        $this->updateDataset->handle(new Scraped($url, $type, $data));
+        $this->updateDataset->handle(new Scraped(new ScrapeRequest($url, $type), $data));
 
         $this->assertEquals($data, ScrapedDataset::where('url', $url)->first()->toArray()['data']);
         $this->assertEquals(UpdateDataset::DATASET_AMOUNT_LIMIT, ScrapedDataset::withType($type)->count());
