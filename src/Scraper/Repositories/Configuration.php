@@ -16,8 +16,6 @@ class Configuration
      */
     private $configurator;
 
-    private $cacheKey = self::class . '-config';
-
     /**
      * Cache TTL in minutes.
      *
@@ -37,7 +35,8 @@ class Configuration
 
     public function calculate(string $type): Collection
     {
-        $config = Cache::get($this->cacheKey);
+        $cacheKey = $this->getCacheKey($type);
+        $config   = Cache::get($cacheKey);
         if (!$config) {
             Log::warning('Calculating configuration');
             $scrapedDataset = ScrapedDataset::withType($type)->get();
@@ -47,9 +46,14 @@ class Configuration
             }
 
             $config = $this->configurator->configureFromDataset($scrapedDataset);
-            Cache::put($this->cacheKey, $config, self::CACHE_TTL);
+            Cache::put($cacheKey, $config, self::CACHE_TTL);
         }
 
         return $config;
+    }
+
+    protected function getCacheKey(string $type): string
+    {
+        return self::class . "-config-{$type}";
     }
 }

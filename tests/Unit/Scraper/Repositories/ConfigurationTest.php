@@ -100,10 +100,10 @@ class ConfigurationTest extends TestCase
         ]);
 
         Cache::shouldReceive('get')
-            ->with($this->getCacheKey())
+            ->with(Configuration::class . '-config-post')
             ->andReturnNull();
         Cache::shouldReceive('put')
-            ->with($this->getCacheKey(), $config, Configuration::CACHE_TTL);
+            ->with(Configuration::class . '-config-post', $config, Configuration::CACHE_TTL);
 
         $configurator = \Mockery::mock(Configurator::class);
         $configurator->shouldReceive('configureFromDataset')
@@ -154,7 +154,7 @@ class ConfigurationTest extends TestCase
         ]);
 
         Cache::shouldReceive('get')
-            ->with($this->getCacheKey())
+            ->with(Configuration::class . '-config-post')
             ->andReturnNull();
 
         $configurator = \Mockery::mock(Configurator::class);
@@ -183,7 +183,7 @@ class ConfigurationTest extends TestCase
         $config = collect('configuration');
 
         Cache::shouldReceive('get')
-            ->with($this->getCacheKey())
+            ->with(Configuration::class . '-config-post')
             ->andReturn($config);
 
         $configuration = new Configuration($configurator);
@@ -191,10 +191,5 @@ class ConfigurationTest extends TestCase
             $config,
             $configuration->calculate('post')
         );
-    }
-
-    private function getCacheKey()
-    {
-        return Configuration::class . '-config';
     }
 }
