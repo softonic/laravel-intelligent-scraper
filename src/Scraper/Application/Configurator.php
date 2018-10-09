@@ -78,6 +78,7 @@ class Configurator
         $result         = [];
         $variant        = [];
         $allFieldsFound = true;
+
         foreach ($scrapedData['data'] as $field => $value) {
             try {
                 $result[$field] = $this->xpathBuilder->find(
@@ -92,7 +93,7 @@ class Configurator
             }
         }
 
-        $this->saveNewVariant($scrapedData, $allFieldsFound ? $variant : []);
+        $this->updateVariant($scrapedData, $allFieldsFound ? $variant : []);
 
         return $result;
     }
@@ -141,7 +142,7 @@ class Configurator
         }
     }
 
-    private function saveNewVariant($scrapedData, $variant): void
+    private function updateVariant($scrapedData, $variant): void
     {
         $scrapedData['variant'] = getVariantId($scrapedData['type'], $variant);
         $scrapedData->save();
