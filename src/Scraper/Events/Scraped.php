@@ -20,14 +20,21 @@ class Scraped
     public $data;
 
     /**
+     * @var string
+     */
+    public $variant;
+
+    /**
      * Create a new event instance.
      *
      * @param ScrapeRequest $scrapeRequest
      * @param array         $data
+     * @param string        $variant
      */
-    public function __construct(ScrapeRequest $scrapeRequest, array $data)
+    public function __construct(ScrapeRequest $scrapeRequest, array $data, string $variant)
     {
         $this->scrapeRequest = $scrapeRequest;
         $this->data          = $data;
+        $this->variant       = $variant;
     }
 }

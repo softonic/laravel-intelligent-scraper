@@ -64,6 +64,7 @@ class ConfigurationTest extends TestCase
         ScrapedDataset::create([
             'url'  => 'https://test.c/123456789222',
             'type' => 'post',
+            'variant' => 'b265521fc089ac61b794bfa3a5ce8a657f6833ce',
             'data' => [
                 'title'  => 'My first post',
                 'author' => 'Jhon Doe',
@@ -72,6 +73,7 @@ class ConfigurationTest extends TestCase
         ScrapedDataset::create([
             'url'  => 'https://test.c/7675487989076',
             'type' => 'list',
+            'variant' => 'b265521fc089ac61b794bfa3a5ce8a657f6833ce',
             'data' => [
                 'cateogry' => 'Entertaiment',
                 'author'   => 'Jhon Doe',
@@ -80,6 +82,7 @@ class ConfigurationTest extends TestCase
         ScrapedDataset::create([
             'url'  => 'https://test.c/223456789111',
             'type' => 'post',
+            'variant' => 'b265521fc089ac61b794bfa3a5ce8a657f6833ce',
             'data' => [
                 'title'  => 'My second Post',
                 'author' => 'Jhon Doe',
@@ -131,6 +134,7 @@ class ConfigurationTest extends TestCase
         ScrapedDataset::create([
             'url'  => 'https://test.c/123456789222',
             'type' => 'post',
+            'variant' => 'b265521fc089ac61b794bfa3a5ce8a657f6833ce',
             'data' => [
                 'title'  => 'My first post',
                 'author' => 'Jhon Doe',
@@ -139,6 +143,7 @@ class ConfigurationTest extends TestCase
         ScrapedDataset::create([
             'url'  => 'https://test.c/7675487989076',
             'type' => 'list',
+            'variant' => 'b265521fc089ac61b794bfa3a5ce8a657f6833ce',
             'data' => [
                 'cateogry' => 'Entertaiment',
                 'author'   => 'Jhon Doe',
@@ -147,6 +152,7 @@ class ConfigurationTest extends TestCase
         ScrapedDataset::create([
             'url'  => 'https://test.c/223456789111',
             'type' => 'post',
+            'variant' => 'b265521fc089ac61b794bfa3a5ce8a657f6833ce',
             'data' => [
                 'title'  => 'My second post',
                 'author' => 'Jhon Doe',

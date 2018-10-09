@@ -23,16 +23,19 @@ class UpdateDataset implements ShouldQueue
 
     private function addDataset(Scraped $event)
     {
-        $scraperDatasets = ScrapedDataset::withType($event->scrapeRequest->type);
+        $scraperDatasets = ScrapedDataset::withType($event->scrapeRequest->type)
+            ->withVariant($event->variant);
+
         if (self::DATASET_AMOUNT_LIMIT <= $scraperDatasets->count()) {
             $scraperDatasets->orderBy('updated_at', 'desc')->first()->delete();
         }
 
         ScrapedDataset::create(
             [
-                'url'  => $event->scrapeRequest->url,
-                'type' => $event->scrapeRequest->type,
-                'data' => $event->data,
+                'url'     => $event->scrapeRequest->url,
+                'type'    => $event->scrapeRequest->type,
+                'variant' => $event->variant,
+                'data'    => $event->data,
             ]
         );
     }

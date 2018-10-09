@@ -74,7 +74,7 @@ class ConfigureScraperTest extends TestCase
 
         $this->expectsEvents(ScrapeFailed::class);
 
-        $scrapeRequest    = new ScrapeRequest($this->url, $this->type);
+        $scrapeRequest = new ScrapeRequest($this->url, $this->type);
         $configureScraper->handle(new InvalidConfiguration($scrapeRequest));
     }
 
@@ -96,8 +96,11 @@ class ConfigureScraperTest extends TestCase
             ]),
         ]);
         $scrapedData = [
-            'title'   => ['test'],
-            'version' => ['1.0'],
+            'variant' => 'b265521fc089ac61b794bfa3a5ce8a657f6833ce',
+            'data'    => [
+                'title'   => ['test'],
+                'version' => ['1.0'],
+            ],
         ];
 
         $this->config->shouldReceive('calculate')
@@ -125,21 +128,21 @@ class ConfigureScraperTest extends TestCase
             return $event instanceof $class;
         })->first();
         $this->assertEquals(
-            $scrapedData,
+            $scrapedData['data'],
             $event->data
         );
 
         $this->assertDatabaseHas(
             'configurations',
             [
-                'name' => 'title',
+                'name'   => 'title',
                 'xpaths' => json_encode(['//*[@id="page-title"]']),
             ]
         );
         $this->assertDatabaseHas(
             'configurations',
             [
-                'name' => 'version',
+                'name'   => 'version',
                 'xpaths' => json_encode(['/html/div[2]/p']),
             ]
         );

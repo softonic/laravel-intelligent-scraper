@@ -22,10 +22,16 @@ class Configurator
      */
     private $xpathBuilder;
 
-    public function __construct(Client $client, XpathBuilder $xpathBuilder)
+    /**
+     * @var VariantGenerator
+     */
+    private $variantGenerator;
+
+    public function __construct(Client $client, XpathBuilder $xpathBuilder, VariantGenerator $variantGenerator)
     {
-        $this->client       = $client;
-        $this->xpathBuilder = $xpathBuilder;
+        $this->client           = $client;
+        $this->xpathBuilder     = $xpathBuilder;
+        $this->variantGenerator = $variantGenerator;
     }
 
     /**
@@ -76,17 +82,22 @@ class Configurator
     private function findConfigByScrapedData($scrapedData, $crawler)
     {
         $result = [];
+
         foreach ($scrapedData['data'] as $field => $value) {
             try {
                 $result[$field] = $this->xpathBuilder->find(
                     $crawler->getNode(0),
                     $value
                 );
+                $this->variantGenerator->addConfig($field, $result[$field]);
             } catch (\UnexpectedValueException $e) {
+                $this->variantGenerator->fieldNotFound();
                 $value = is_array($value) ? json_encode($value) : $value;
                 Log::warning("Field '{$field}' with value '{$value}' not found for '{$crawler->getUri()}'.");
             }
         }
+
+        $this->updateVariant($scrapedData);
 
         return $result;
     }
@@ -133,5 +144,11 @@ class Configurator
             $fieldsMissing = implode(',', array_diff($fieldsExpected, $fieldsFound));
             throw new ConfigurationException("Field(s) \"{$fieldsMissing}\" not found.", 0);
         }
+    }
+
+    private function updateVariant($scrapedData): void
+    {
+        $scrapedData['variant'] = $this->variantGenerator->getId($scrapedData['type']);
+        $scrapedData->save();
     }
 }

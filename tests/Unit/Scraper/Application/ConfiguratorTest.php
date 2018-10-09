@@ -31,6 +31,7 @@ class ConfiguratorTest extends TestCase
         ];
         $client       = \Mockery::mock(Client::class);
         $xpathBuilder = \Mockery::mock(XpathBuilder::class);
+        $variantGenerator = \Mockery::mock(VariantGenerator::class);
 
         $client->shouldReceive('request')
             ->once()
@@ -43,7 +44,7 @@ class ConfiguratorTest extends TestCase
             ->once()
             ->andReturn(404);
 
-        $configurator = new Configurator($client, $xpathBuilder);
+        $configurator = new Configurator($client, $xpathBuilder, $variantGenerator);
 
         try {
             $configurator->configureFromDataset($posts);
@@ -56,13 +57,14 @@ class ConfiguratorTest extends TestCase
     /**
      * @test
      */
-    public function whenTryToFindNewXpathButNotFoundItShouldLogIt()
+    public function whenTryToFindNewXpathButNotFoundItShouldLogItAndResetVariant()
     {
         $posts        = [
-            ScrapedDataset::make([
-                'url'  => 'https://test.c/123456789012',
-                'type' => 'post',
-                'data' => [
+            ScrapedDataset::create([
+                'url'     => 'https://test.c/123456789012',
+                'type'    => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
+                'data'    => [
                     'title'  => 'My Title',
                     'author' => 'My author',
                 ],
@@ -70,6 +72,7 @@ class ConfiguratorTest extends TestCase
         ];
         $client       = \Mockery::mock(Client::class);
         $xpathBuilder = \Mockery::mock(XpathBuilder::class);
+        $variantGenerator = \Mockery::mock(VariantGenerator::class);
 
         $client->shouldReceive('request')
             ->once()
@@ -96,36 +99,47 @@ class ConfiguratorTest extends TestCase
             ->with($rootElement, 'My author')
             ->andThrow(\UnexpectedValueException::class);
 
+        $variantGenerator->shouldReceive('addConfig')
+            ->withAnyArgs();
+        $variantGenerator->shouldReceive('fieldNotFound')
+            ->once();
+        $variantGenerator->shouldReceive('getId')
+            ->andReturnNull();
+
         Log::shouldReceive('warning')
             ->with("Field 'author' with value 'My author' not found for 'https://test.c/123456789012'.");
 
-        $configurator = new Configurator($client, $xpathBuilder);
+        $configurator = new Configurator($client, $xpathBuilder, $variantGenerator);
 
         try {
             $configurator->configureFromDataset($posts);
         } catch (ConfigurationException $e) {
             $this->assertEquals('Field(s) "author" not found.', $e->getMessage());
         }
+
+        $this->assertNull($posts[0]['variant']);
     }
 
     /**
      * @test
      */
-    public function whenTryToFindXpathInMultiplepostsAndNotFoundInAnyItShouldThrowAnExceptionAndRemoveThem()
+    public function whenTryToFindXpathInMultiplepostsAndNotFoundInAnyItShouldThrowAnExceptionAndLogItAndResetVariant()
     {
         $posts        = [
             ScrapedDataset::make([
-                'url'  => 'https://test.c/123456789012',
-                'type' => 'post',
-                'data' => [
+                'url'     => 'https://test.c/123456789012',
+                'type'    => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
+                'data'    => [
                     'title'  => 'My Title',
                     'author' => 'My author',
                 ],
             ]),
             ScrapedDataset::make([
-                'url'  => 'https://test.c/123456789022',
-                'type' => 'post',
-                'data' => [
+                'url'     => 'https://test.c/123456789022',
+                'type'    => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
+                'data'    => [
                     'title'  => 'My Title',
                     'author' => 'My author',
                 ],
@@ -133,6 +147,7 @@ class ConfiguratorTest extends TestCase
         ];
         $client       = \Mockery::mock(Client::class);
         $xpathBuilder = \Mockery::mock(XpathBuilder::class);
+        $variantGenerator = \Mockery::mock(VariantGenerator::class);
 
         $client->shouldReceive('request')
             ->once()
@@ -165,30 +180,41 @@ class ConfiguratorTest extends TestCase
             ->with($rootElement, 'My author')
             ->andThrow(\UnexpectedValueException::class);
 
+        $variantGenerator->shouldReceive('addConfig')
+            ->never();
+        $variantGenerator->shouldReceive('fieldNotFound')
+            ->never();
+        $variantGenerator->shouldReceive('getId')
+            ->andReturnNull();
+
         Log::shouldReceive('warning')
             ->with("Field 'title' with value 'My Title' not found for 'https://test.c/123456789012'.");
 
         Log::shouldReceive('warning')
             ->with("Field 'author' with value 'My author' not found for 'https://test.c/123456789012'.");
 
-        $configurator = new Configurator($client, $xpathBuilder);
+        $configurator = new Configurator($client, $xpathBuilder, new VariantGenerator());
 
         try {
             $configurator->configureFromDataset($posts);
         } catch (ConfigurationException $e) {
             $this->assertEquals('Field(s) "title,author" not found.', $e->getMessage());
         }
+
+        $this->assertNull($posts[0]['variant']);
+        $this->assertNull($posts[1]['variant']);
     }
 
     /**
      * @test
      */
-    public function whenDiscoverDifferentXpathItShouldGetAllOfThem()
+    public function whenDiscoverDifferentXpathItShouldGetAllOfThemAndUpdateTheVariants()
     {
         $posts        = [
             ScrapedDataset::make([
                 'url'  => 'https://test.c/123456789012',
                 'type' => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
                 'data' => [
                     'title'  => 'My Title',
                     'author' => 'My author',
@@ -197,6 +223,7 @@ class ConfiguratorTest extends TestCase
             ScrapedDataset::make([
                 'url'  => 'https://test.c/123456789022',
                 'type' => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
                 'data' => [
                     'title'  => 'My Title',
                     'author' => 'My author',
@@ -205,6 +232,7 @@ class ConfiguratorTest extends TestCase
             ScrapedDataset::make([
                 'url'  => 'https://test.c/123456789033',
                 'type' => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
                 'data' => [
                     'title'  => 'My Title2',
                     'author' => 'My author2',
@@ -213,6 +241,7 @@ class ConfiguratorTest extends TestCase
         ];
         $client       = \Mockery::mock(Client::class);
         $xpathBuilder = \Mockery::mock(XpathBuilder::class);
+        $variantGenerator = \Mockery::mock(VariantGenerator::class);
 
         $client->shouldReceive('request')
             ->once()
@@ -256,7 +285,14 @@ class ConfiguratorTest extends TestCase
             ->with($rootElement, 'My author2')
             ->andReturn('//*[|id="author2"]');
 
-        $configurator = new Configurator($client, $xpathBuilder);
+        $variantGenerator->shouldReceive('addConfig')
+            ->withAnyArgs();
+        $variantGenerator->shouldReceive('fieldNotFound')
+            ->never();
+        $variantGenerator->shouldReceive('getId')
+            ->andReturn(10, 20, 30);
+
+        $configurator = new Configurator($client, $xpathBuilder, $variantGenerator);
 
         $configurations = $configurator->configureFromDataset($posts);
 
@@ -281,5 +317,9 @@ class ConfiguratorTest extends TestCase
             ],
             array_values($configurations[1]['xpaths'])
         );
+
+        $this->assertEquals($posts[0]['variant'], 10);
+        $this->assertEquals($posts[1]['variant'], 20);
+        $this->assertEquals($posts[2]['variant'], 30);
     }
 }

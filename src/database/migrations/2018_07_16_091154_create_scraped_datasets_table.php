@@ -15,6 +15,7 @@ class CreateScrapedDatasetsTable extends Migration
         Schema::create('scraped_datasets', function (Blueprint $table) {
             $table->string('url', 1024)->primary();
             $table->string('type');
+            $table->string('variant', 40)->index()->nullable();
             $table->json('data');
             $table->timestamps();
         });

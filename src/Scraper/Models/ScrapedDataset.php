@@ -35,11 +35,17 @@ class ScrapedDataset extends Model
     protected $fillable = [
         'url',
         'type',
+        'variant',
         'data',
     ];
 
     public function scopeWithType($query, string $type)
     {
         return $query->where('type', $type);
+    }
+
+    public function scopeWithVariant($query, string $variant)
+    {
+        return $query->where('variant', $variant);
     }
 }

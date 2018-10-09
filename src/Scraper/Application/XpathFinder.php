@@ -12,9 +12,15 @@ class XpathFinder
      */
     private $client;
 
-    public function __construct(GoutteClient $client)
+    /**
+     * @var VariantGenerator
+     */
+    private $variantGenerator;
+
+    public function __construct(GoutteClient $client, VariantGenerator $variantGenerator)
     {
-        $this->client = $client;
+        $this->client           = $client;
+        $this->variantGenerator = $variantGenerator;
     }
 
     public function extract(string $url, $configs): array
@@ -32,6 +38,7 @@ class XpathFinder
                 $subcrawler = $crawler->filterXPath($xpath);
 
                 if ($subcrawler->count()) {
+                    $this->variantGenerator->addConfig($config['name'], $xpath);
                     break;
                 }
             }
@@ -43,10 +50,12 @@ class XpathFinder
                 );
             }
 
-            $result[$config['name']] = $subcrawler->each(function ($node) {
+            $result['data'][$config['name']] = $subcrawler->each(function ($node) {
                 return $node->text();
             });
         }
+
+        $result['variant'] = $this->variantGenerator->getId($config['type']);
 
         return $result;
     }
