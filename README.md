@@ -63,7 +63,7 @@ Due to the pages usually have different structures depending on different variab
 trying to cover maximum page variations possible. The scraper WILL NOT BE ABLE to scrap page variations not incorporated
 in the dataset.
 
-Once we did the job, all is ready to work. You should not care about updates always you have enought data in the dataset
+Once we did the job, all is ready to work. You should not care about updates always you have enough data in the dataset
 to cover all the new modifications on the page, so the scraper will recalculate the modifications on the fly. You can 
 check [how it works](how-it-works.md) to know much about the internals.
 
@@ -74,6 +74,7 @@ We will check more deeply how we can create a new dataset and what options are a
 The dataset is composed by `url` and `data`. 
 * The `url` part is simple, you just need to indicate the url from where you obtained the data.
 * The `type` part gives a item name to the current dataset. This allows you to define multiple types.
+* The `variat` identifies the page variant. The identifier is a sha1 hash build based in the xpath used to get the data.
 * The `data` part is where you indicate what data and assign the label that you want to get. 
 The data could be a list of items or a single item.
 
@@ -83,9 +84,10 @@ A basic example could be:
 use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
 
 ScrapedDataset::create([
-    'url'  => 'https://test.c/p/my-objective',
-    'type' => 'Item-definition-1',
-    'data' => [
+    'url'     => 'https://test.c/p/my-objective',
+    'type'    => 'Item-definition-1',
+    'variant' => '8ed10778a83f1266e7ffed90205f7fb61ddcdf78',
+    'data'    => [
         'title'     => 'My title',
         'body'      => 'This is the body content I want to get',
         'images'    => [
@@ -112,6 +114,7 @@ use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
 ScrapedDataset::create([
     'url'  => 'https://test.c/p/my-objective',
     'type' => 'Item-definition-1',
+    'variant' => '8ed10778a83f1266e7ffed90205f7fb61ddcdf78',
     'data' => [
         'title'     => 'My title',
         'body'      => regexp('/^Body starts here, but it is do long that.*$/si'),
@@ -160,7 +163,7 @@ After configure the scraper, you will be able to request an specific scrape usin
 ```php
 <?php 
 
-scrape('https://test.c/p/my-objective', 'Item-definition-1');
+scrape('https://test.c/p/my-objective', 'Item-definition-1', 'variant-sha1');
 ```
 
 The scrape will produce a `\Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped` event if all worked as expected.
@@ -170,6 +173,7 @@ So attach a listener to that event to receive the data.
 $event->scrapeRequest->url  // Url scraped
 $event->scrapeRequest->type // Request type
 $event->data // Contains all the data in a [ 'fieldName' => 'value' ] format.
+$event->variant // Contains the page variation sha1 hash.
 ```
 
 All the output fields are arrays that can contain one or more results.
@@ -212,6 +216,7 @@ The scraper is auto configurable, but needs an initial dataset or add a configur
 The dataset tells the configurator which data do you want and how to label it.
 
 There are three services that have unique responsibilities and are connected using the event system.
+
 ### Scrape
 
 It is fired when the system receive a `\Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeRequest` event. It
