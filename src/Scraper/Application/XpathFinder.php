@@ -12,9 +12,15 @@ class XpathFinder
      */
     private $client;
 
-    public function __construct(GoutteClient $client)
+    /**
+     * @var VariantGenerator
+     */
+    private $variantGenerator;
+
+    public function __construct(GoutteClient $client, VariantGenerator $variantGenerator)
     {
-        $this->client = $client;
+        $this->client           = $client;
+        $this->variantGenerator = $variantGenerator;
     }
 
     public function extract(string $url, $configs): array
@@ -25,15 +31,14 @@ class XpathFinder
             throw new \UnexpectedValueException("Response error from '{$url}' with '{$httpCode}' http code");
         }
 
-        $variant = [];
-        $result  = [];
+        $result = [];
         foreach ($configs as $config) {
             $subcrawler = collect();
             foreach ($config['xpaths'] as $xpath) {
                 $subcrawler = $crawler->filterXPath($xpath);
 
                 if ($subcrawler->count()) {
-                    $variant[] = $config['name'] . $xpath;
+                    $this->variantGenerator->addConfig($config['name'], $xpath);
                     break;
                 }
             }
@@ -50,7 +55,7 @@ class XpathFinder
             });
         }
 
-        $result['variant'] = getVariantId($config['type'], $variant);
+        $result['variant'] = $this->variantGenerator->getId($config['type']);
 
         return $result;
     }

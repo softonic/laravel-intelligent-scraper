@@ -22,10 +22,16 @@ class Configurator
      */
     private $xpathBuilder;
 
-    public function __construct(Client $client, XpathBuilder $xpathBuilder)
+    /**
+     * @var VariantGenerator
+     */
+    private $variantGenerator;
+
+    public function __construct(Client $client, XpathBuilder $xpathBuilder, VariantGenerator $variantGenerator)
     {
-        $this->client       = $client;
-        $this->xpathBuilder = $xpathBuilder;
+        $this->client           = $client;
+        $this->xpathBuilder     = $xpathBuilder;
+        $this->variantGenerator = $variantGenerator;
     }
 
     /**
@@ -75,9 +81,7 @@ class Configurator
      */
     private function findConfigByScrapedData($scrapedData, $crawler)
     {
-        $result         = [];
-        $variant        = [];
-        $allFieldsFound = true;
+        $result = [];
 
         foreach ($scrapedData['data'] as $field => $value) {
             try {
@@ -85,15 +89,15 @@ class Configurator
                     $crawler->getNode(0),
                     $value
                 );
-                $variant[]      = $field . $result[$field];
+                $this->variantGenerator->addConfig($field, $result[$field]);
             } catch (\UnexpectedValueException $e) {
-                $allFieldsFound = false;
-                $value          = is_array($value) ? json_encode($value) : $value;
+                $this->variantGenerator->fieldNotFound();
+                $value = is_array($value) ? json_encode($value) : $value;
                 Log::warning("Field '{$field}' with value '{$value}' not found for '{$crawler->getUri()}'.");
             }
         }
 
-        $this->updateVariant($scrapedData, $allFieldsFound ? $variant : []);
+        $this->updateVariant($scrapedData);
 
         return $result;
     }
@@ -142,9 +146,9 @@ class Configurator
         }
     }
 
-    private function updateVariant($scrapedData, $variant): void
+    private function updateVariant($scrapedData): void
     {
-        $scrapedData['variant'] = getVariantId($scrapedData['type'], $variant);
+        $scrapedData['variant'] = $this->variantGenerator->getId($scrapedData['type']);
         $scrapedData->save();
     }
 }

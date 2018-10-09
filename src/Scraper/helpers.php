@@ -13,16 +13,3 @@ if (!function_exists('scrape')) {
         event(new \Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeRequest($url, $type));
     }
 }
-
-if (!function_exists('getVariantId')) {
-    function getVariantId(string $type, array $variant)
-    {
-        if (empty($variant)) {
-            return null;
-        }
-
-        sort($variant);
-
-        return sha1($type . implode('', $variant));
-    }
-}
