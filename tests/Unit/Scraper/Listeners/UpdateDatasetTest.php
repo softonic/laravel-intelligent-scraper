@@ -37,7 +37,13 @@ class UpdateDatasetTest extends \Tests\TestCase
             'category' => ['Entertainment'],
         ];
 
-        $this->updateDataset->handle(new Scraped(new ScrapeRequest($dataset->url, 'post'), $data));
+        $this->updateDataset->handle(
+            new Scraped(
+                new ScrapeRequest($dataset->url, 'post'),
+                $data,
+                'b265521fc089ac61b794bfa3a5ce8a657f6833ce'
+            )
+        );
 
         $this->assertEquals($data, ScrapedDataset::where('url', $dataset->url)->first()->toArray()['data']);
         $this->assertEquals(2, ScrapedDataset::all()->count());
@@ -48,8 +54,12 @@ class UpdateDatasetTest extends \Tests\TestCase
      */
     public function whenDatasetDoesNotExistAndTheDatasetsLimitHasNotBeenReachedItShouldBeSaved()
     {
-        $seeder = new \ScrapedDatasetSeeder();
-        $seeder->createScrapedDatasets(2);
+        factory(ScrapedDataset::class, UpdateDataset::DATASET_AMOUNT_LIMIT - 1)->create([
+            'variant' => 'b265521fc089ac61b794bfa3a5ce8a657f6833ce',
+        ]);
+        factory(ScrapedDataset::class)->create([
+            'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
+        ]);
 
         $url  = 'https//store-url.com/id';
         $data = [
@@ -58,10 +68,16 @@ class UpdateDatasetTest extends \Tests\TestCase
             'category' => ['Entertainment'],
         ];
 
-        $this->updateDataset->handle(new Scraped(new ScrapeRequest($url, 'post'), $data));
+        $this->updateDataset->handle(
+            new Scraped(
+                new ScrapeRequest($url, 'post'),
+                $data,
+                'b265521fc089ac61b794bfa3a5ce8a657f6833ce'
+            )
+        );
 
         $this->assertEquals($data, ScrapedDataset::where('url', $url)->first()->toArray()['data']);
-        $this->assertEquals(3, ScrapedDataset::all()->count());
+        $this->assertEquals(101, ScrapedDataset::count());
     }
 
     /**
@@ -69,8 +85,9 @@ class UpdateDatasetTest extends \Tests\TestCase
      */
     public function whenDatasetDoesNotExistAndTheDatasetsLimitHasReachedItShouldReplaceTheOldest()
     {
-        $seeder = new \ScrapedDatasetSeeder();
-        $seeder->createScrapedDatasets(UpdateDataset::DATASET_AMOUNT_LIMIT);
+        factory(ScrapedDataset::class, UpdateDataset::DATASET_AMOUNT_LIMIT)->create([
+            'variant' => 'b265521fc089ac61b794bfa3a5ce8a657f6833ce',
+        ]);
 
         $url  = 'https//store-url.com/id';
         $type = 'post';
@@ -79,7 +96,13 @@ class UpdateDatasetTest extends \Tests\TestCase
             'author' => ['Jhon Doe'],
         ];
 
-        $this->updateDataset->handle(new Scraped(new ScrapeRequest($url, $type), $data));
+        $this->updateDataset->handle(
+            new Scraped(
+                new ScrapeRequest($url, $type),
+                $data,
+                'b265521fc089ac61b794bfa3a5ce8a657f6833ce'
+            )
+        );
 
         $this->assertEquals($data, ScrapedDataset::where('url', $url)->first()->toArray()['data']);
         $this->assertEquals(UpdateDataset::DATASET_AMOUNT_LIMIT, ScrapedDataset::withType($type)->count());

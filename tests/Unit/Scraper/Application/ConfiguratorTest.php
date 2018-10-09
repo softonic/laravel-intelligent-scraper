@@ -56,13 +56,14 @@ class ConfiguratorTest extends TestCase
     /**
      * @test
      */
-    public function whenTryToFindNewXpathButNotFoundItShouldLogIt()
+    public function whenTryToFindNewXpathButNotFoundItShouldLogItAndResetVariant()
     {
         $posts        = [
-            ScrapedDataset::make([
-                'url'  => 'https://test.c/123456789012',
-                'type' => 'post',
-                'data' => [
+            ScrapedDataset::create([
+                'url'     => 'https://test.c/123456789012',
+                'type'    => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
+                'data'    => [
                     'title'  => 'My Title',
                     'author' => 'My author',
                 ],
@@ -106,26 +107,30 @@ class ConfiguratorTest extends TestCase
         } catch (ConfigurationException $e) {
             $this->assertEquals('Field(s) "author" not found.', $e->getMessage());
         }
+
+        $this->assertNull($posts[0]['variant']);
     }
 
     /**
      * @test
      */
-    public function whenTryToFindXpathInMultiplepostsAndNotFoundInAnyItShouldThrowAnExceptionAndRemoveThem()
+    public function whenTryToFindXpathInMultiplepostsAndNotFoundInAnyItShouldThrowAnExceptionAndLogItAndResetVariant()
     {
         $posts        = [
             ScrapedDataset::make([
-                'url'  => 'https://test.c/123456789012',
-                'type' => 'post',
-                'data' => [
+                'url'     => 'https://test.c/123456789012',
+                'type'    => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
+                'data'    => [
                     'title'  => 'My Title',
                     'author' => 'My author',
                 ],
             ]),
             ScrapedDataset::make([
-                'url'  => 'https://test.c/123456789022',
-                'type' => 'post',
-                'data' => [
+                'url'     => 'https://test.c/123456789022',
+                'type'    => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
+                'data'    => [
                     'title'  => 'My Title',
                     'author' => 'My author',
                 ],
@@ -178,17 +183,21 @@ class ConfiguratorTest extends TestCase
         } catch (ConfigurationException $e) {
             $this->assertEquals('Field(s) "title,author" not found.', $e->getMessage());
         }
+
+        $this->assertNull($posts[0]['variant']);
+        $this->assertNull($posts[1]['variant']);
     }
 
     /**
      * @test
      */
-    public function whenDiscoverDifferentXpathItShouldGetAllOfThem()
+    public function whenDiscoverDifferentXpathItShouldGetAllOfThemAndUpdateTheVariants()
     {
         $posts        = [
             ScrapedDataset::make([
                 'url'  => 'https://test.c/123456789012',
                 'type' => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
                 'data' => [
                     'title'  => 'My Title',
                     'author' => 'My author',
@@ -197,6 +206,7 @@ class ConfiguratorTest extends TestCase
             ScrapedDataset::make([
                 'url'  => 'https://test.c/123456789022',
                 'type' => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
                 'data' => [
                     'title'  => 'My Title',
                     'author' => 'My author',
@@ -205,6 +215,7 @@ class ConfiguratorTest extends TestCase
             ScrapedDataset::make([
                 'url'  => 'https://test.c/123456789033',
                 'type' => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
                 'data' => [
                     'title'  => 'My Title2',
                     'author' => 'My author2',
@@ -281,5 +292,9 @@ class ConfiguratorTest extends TestCase
             ],
             array_values($configurations[1]['xpaths'])
         );
+
+        $this->assertEquals($posts[0]['variant'], sha1('postauthor//*[|id="author"]title//*[|id="title"]'));
+        $this->assertEquals($posts[1]['variant'], sha1('postauthor//*[|id="author"]title//*[|id="title"]'));
+        $this->assertEquals($posts[2]['variant'], sha1('postauthor//*[|id="author2"]title//*[|id="title2"]'));
     }
 }

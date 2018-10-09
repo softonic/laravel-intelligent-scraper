@@ -140,8 +140,11 @@ class ScrapeTest extends TestCase
     public function whenTheDataExtractionWorksItShouldReturnsTheScrapedData()
     {
         $scrapedData = [
-            'title'   => ['test'],
-            'version' => ['1.0'],
+            'variant' => 'b265521fc089ac61b794bfa3a5ce8a657f6833ce',
+            'data' => [
+                'title'   => ['test'],
+                'version' => ['1.0'],
+            ],
         ];
         $xpathConfig = collect([
             'title'   => '//*[@id="page-title"]',
@@ -172,7 +175,7 @@ class ScrapeTest extends TestCase
             return $event instanceof $class;
         })->first();
         $this->assertEquals(
-            $scrapedData,
+            $scrapedData['data'],
             $event->data
         );
     }

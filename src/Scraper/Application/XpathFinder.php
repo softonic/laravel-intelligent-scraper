@@ -25,13 +25,15 @@ class XpathFinder
             throw new \UnexpectedValueException("Response error from '{$url}' with '{$httpCode}' http code");
         }
 
-        $result = [];
+        $variant = [];
+        $result  = [];
         foreach ($configs as $config) {
             $subcrawler = collect();
             foreach ($config['xpaths'] as $xpath) {
                 $subcrawler = $crawler->filterXPath($xpath);
 
                 if ($subcrawler->count()) {
+                    $variant[] = $config['name'] . $xpath;
                     break;
                 }
             }
@@ -43,10 +45,12 @@ class XpathFinder
                 );
             }
 
-            $result[$config['name']] = $subcrawler->each(function ($node) {
+            $result['data'][$config['name']] = $subcrawler->each(function ($node) {
                 return $node->text();
             });
         }
+
+        $result['variant'] = getVariantId($config['type'], $variant);
 
         return $result;
     }

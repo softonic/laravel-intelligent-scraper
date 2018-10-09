@@ -164,8 +164,11 @@ class XpathFinderTest extends TestCase
 
         $this->assertEquals(
             [
-                'title'  => ['My Title'],
-                'author' => ['My author'],
+                'variant' => sha1('postauthor//*[@id="author"]title//*[@id="title2"]'),
+                'data'    => [
+                    'title'  => ['My Title'],
+                    'author' => ['My author'],
+                ],
             ],
             $extractedData
         );
