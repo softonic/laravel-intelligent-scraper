@@ -7,8 +7,9 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Log;
 use Mockery\Mock;
 use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\ConfigurationException;
-use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration;
+use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration as ConfigurationModel;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
+use Softonic\LaravelIntelligentScraper\Scraper\Repositories\Configuration;
 use Tests\TestCase;
 
 class ConfiguratorTest extends TestCase
@@ -26,6 +27,11 @@ class ConfiguratorTest extends TestCase
     private $xpathBuilder;
 
     /**
+     * @var Mock | Configuration
+     */
+    private $configuration;
+
+    /**
      * @var Mock | VariantGenerator
      */
     private $variantGenerator;
@@ -41,9 +47,15 @@ class ConfiguratorTest extends TestCase
 
         $this->client           = \Mockery::mock(Client::class);
         $this->xpathBuilder     = \Mockery::mock(XpathBuilder::class);
+        $this->configuration    = \Mockery::mock(Configuration::class);
         $this->variantGenerator = \Mockery::mock(VariantGenerator::class);
 
-        $this->configurator = new Configurator($this->client, $this->xpathBuilder, $this->variantGenerator);
+        $this->configurator = new Configurator(
+            $this->client,
+            $this->xpathBuilder,
+            $this->configuration,
+            $this->variantGenerator
+        );
     }
 
     /**
@@ -72,6 +84,11 @@ class ConfiguratorTest extends TestCase
         $this->client->shouldReceive('getInternalResponse->getStatus')
             ->once()
             ->andReturn(404);
+
+        $this->configuration->shouldReceive('findByType')
+            ->once()
+            ->with('post')
+            ->andReturn(collect());
 
         try {
             $this->configurator->configureFromDataset($posts);
@@ -122,6 +139,86 @@ class ConfiguratorTest extends TestCase
         $this->xpathBuilder->shouldReceive('find')
             ->with($rootElement, 'My author')
             ->andThrow(\UnexpectedValueException::class);
+
+        $this->configuration->shouldReceive('findByType')
+            ->once()
+            ->with('post')
+            ->andReturn(collect());
+
+        $this->variantGenerator->shouldReceive('addConfig')
+            ->withAnyArgs();
+        $this->variantGenerator->shouldReceive('fieldNotFound')
+            ->once();
+        $this->variantGenerator->shouldReceive('getId')
+            ->andReturnNull();
+
+        Log::shouldReceive('warning')
+            ->with("Field 'author' with value 'My author' not found for 'https://test.c/123456789012'.");
+
+        try {
+            $this->configurator->configureFromDataset($posts);
+        } catch (ConfigurationException $e) {
+            $this->assertEquals('Field(s) "author" not found.', $e->getMessage());
+        }
+
+        $this->assertNull($posts[0]['variant']);
+    }
+
+    /**
+     * @test
+     */
+    public function whenUseSomeOldXpathButNotFoundNewsItShouldLogItAndResetVariant()
+    {
+        $posts = [
+            ScrapedDataset::create([
+                'url'     => 'https://test.c/123456789012',
+                'type'    => 'post',
+                'variant' => 'f45a8de53eaeea347a83ebaafaf29f16a1dd97e0',
+                'data'    => [
+                    'title'  => 'My Title',
+                    'author' => 'My author',
+                ],
+            ]),
+        ];
+
+        $this->client->shouldReceive('request')
+            ->once()
+            ->with(
+                'GET',
+                'https://test.c/123456789012'
+            )
+            ->andReturnSelf();
+        $this->client->shouldReceive('getInternalResponse->getStatus')
+            ->once()
+            ->andReturn(200);
+
+        $rootElement = new \DOMElement('test');
+        $this->client->shouldReceive('getNode')
+            ->with(0)
+            ->andReturn($rootElement);
+        $this->client->shouldReceive('filterXpath->count')
+            ->once()
+            ->andReturn(1);
+        $this->client->shouldReceive('getUri')
+            ->andReturn('https://test.c/123456789012');
+
+        $this->xpathBuilder->shouldReceive('find')
+            ->never()
+            ->with($rootElement, 'My Title');
+        $this->xpathBuilder->shouldReceive('find')
+            ->with($rootElement, 'My author')
+            ->andThrow(\UnexpectedValueException::class);
+
+        $this->configuration->shouldReceive('findByType')
+            ->once()
+            ->with('post')
+            ->andReturn(collect([
+                ConfigurationModel::create([
+                    'name' => 'title',
+                    'type' => 'post',
+                    'xpaths' => ['//*[|id="title"]'],
+                ]),
+            ]));
 
         $this->variantGenerator->shouldReceive('addConfig')
             ->withAnyArgs();
@@ -198,6 +295,11 @@ class ConfiguratorTest extends TestCase
         $this->xpathBuilder->shouldReceive('find')
             ->with($rootElement, 'My author')
             ->andThrow(\UnexpectedValueException::class);
+
+        $this->configuration->shouldReceive('findByType')
+            ->once()
+            ->with('post')
+            ->andReturn(collect());
 
         $this->variantGenerator->shouldReceive('addConfig')
             ->never();
@@ -299,6 +401,11 @@ class ConfiguratorTest extends TestCase
             ->with($rootElement, 'My author2')
             ->andReturn('//*[|id="author2"]');
 
+        $this->configuration->shouldReceive('findByType')
+            ->once()
+            ->with('post')
+            ->andReturn(collect());
+
         $this->variantGenerator->shouldReceive('addConfig')
             ->withAnyArgs();
         $this->variantGenerator->shouldReceive('fieldNotFound')
@@ -308,7 +415,7 @@ class ConfiguratorTest extends TestCase
 
         $configurations = $this->configurator->configureFromDataset($posts);
 
-        $this->assertInstanceOf(Configuration::class, $configurations[0]);
+        $this->assertInstanceOf(ConfigurationModel::class, $configurations[0]);
         $this->assertEquals('title', $configurations[0]['name']);
         $this->assertEquals('post', $configurations[0]['type']);
         $this->assertEquals(
@@ -319,7 +426,7 @@ class ConfiguratorTest extends TestCase
             array_values($configurations[0]['xpaths'])
         );
 
-        $this->assertInstanceOf(Configuration::class, $configurations[1]);
+        $this->assertInstanceOf(ConfigurationModel::class, $configurations[1]);
         $this->assertEquals('author', $configurations[1]['name']);
         $this->assertEquals('post', $configurations[1]['type']);
         $this->assertEquals(

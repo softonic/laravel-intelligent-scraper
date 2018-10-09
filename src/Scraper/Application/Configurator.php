@@ -27,11 +27,21 @@ class Configurator
      */
     private $variantGenerator;
 
-    public function __construct(Client $client, XpathBuilder $xpathBuilder, VariantGenerator $variantGenerator)
-    {
+    /**
+     * @var \Softonic\LaravelIntelligentScraper\Scraper\Repositories\Configuration
+     */
+    private $configuration;
+
+    public function __construct(
+        Client $client,
+        XpathBuilder $xpathBuilder,
+        \Softonic\LaravelIntelligentScraper\Scraper\Repositories\Configuration $configuration,
+        VariantGenerator $variantGenerator
+    ) {
         $this->client           = $client;
         $this->xpathBuilder     = $xpathBuilder;
         $this->variantGenerator = $variantGenerator;
+        $this->configuration    = $configuration;
     }
 
     /**
@@ -41,14 +51,17 @@ class Configurator
      */
     public function configureFromDataset($scrapedDataset): Collection
     {
+        $type                 = $scrapedDataset[0]['type'];
+        $currentConfiguration = $this->configuration->findByType($type);
+
         $result = [];
         foreach ($scrapedDataset as $scrapedData) {
             if ($crawler = $this->getCrawler($scrapedData)) {
-                $result[] = $this->findConfigByScrapedData($scrapedData, $crawler);
+                $result[] = $this->findConfigByScrapedData($scrapedData, $crawler, $currentConfiguration);
             }
         }
 
-        $finalConfig = $this->mergeConfiguration($result, $scrapedDataset[0]['type']);
+        $finalConfig = $this->mergeConfiguration($result, $type);
 
         $this->checkConfiguration($scrapedDataset[0]['data'], $finalConfig);
 
@@ -74,21 +87,25 @@ class Configurator
      *
      * If the data is not valid anymore, it is deleted from dataset.
      *
-     * @param ScrapedDataset $scrapedData
-     * @param Crawler        $crawler
+     * @param ScrapedDataset  $scrapedData
+     * @param Crawler         $crawler
+     * @param Configuration[] $currentConfiguration
      *
      * @return array
      */
-    private function findConfigByScrapedData($scrapedData, $crawler)
+    private function findConfigByScrapedData($scrapedData, $crawler, $currentConfiguration)
     {
         $result = [];
 
         foreach ($scrapedData['data'] as $field => $value) {
             try {
-                $result[$field] = $this->xpathBuilder->find(
-                    $crawler->getNode(0),
-                    $value
-                );
+                $result[$field] = $this->getOldXpath($currentConfiguration, $field, $crawler);
+                if (!$result[$field]) {
+                    $result[$field] = $this->xpathBuilder->find(
+                        $crawler->getNode(0),
+                        $value
+                    );
+                }
                 $this->variantGenerator->addConfig($field, $result[$field]);
             } catch (\UnexpectedValueException $e) {
                 $this->variantGenerator->fieldNotFound();
@@ -100,6 +117,19 @@ class Configurator
         $this->updateVariant($scrapedData);
 
         return $result;
+    }
+
+    private function getOldXpath($currentConfiguration, $field, $crawler)
+    {
+        $config = $currentConfiguration->firstWhere('name', $field);
+        foreach ($config['xpaths'] ?? [] as $xpath) {
+            $isFound = $crawler->filterXPath($xpath)->count();
+            if ($isFound) {
+                return $xpath;
+            }
+        }
+
+        return false;
     }
 
     /**
