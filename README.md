@@ -74,7 +74,7 @@ We will check more deeply how we can create a new dataset and what options are a
 The dataset is composed by `url` and `data`. 
 * The `url` part is simple, you just need to indicate the url from where you obtained the data.
 * The `type` part gives a item name to the current dataset. This allows you to define multiple types.
-* The `variat` identifies the page variant. The identifier is a sha1 hash build based in the xpath used to get the data.
+* The `variant` identifies the page variant. The identifier is a sha1 hash build based in the xpath used to get the data.
 * The `data` part is where you indicate what data and assign the label that you want to get. 
 The data could be a list of items or a single item.
 
