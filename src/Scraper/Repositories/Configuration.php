@@ -23,11 +23,6 @@ class Configuration
      */
     const CACHE_TTL = 30;
 
-    public function __construct(Configurator $crawler)
-    {
-        $this->configurator = $crawler;
-    }
-
     public function findByType(string $type): Collection
     {
         return ConfigurationModel::withType($type)->get();
@@ -35,6 +30,8 @@ class Configuration
 
     public function calculate(string $type): Collection
     {
+        $this->configurator = $this->configurator ?? resolve(Configurator::class);
+
         $cacheKey = $this->getCacheKey($type);
         $config   = Cache::get($cacheKey);
         if (!$config) {
