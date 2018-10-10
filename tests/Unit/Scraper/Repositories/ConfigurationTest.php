@@ -3,6 +3,7 @@
 namespace Softonic\LaravelIntelligentScraper\Scraper\Repositories;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Softonic\LaravelIntelligentScraper\Scraper\Application\Configurator;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration as ConfigurationModel;
@@ -34,9 +35,7 @@ class ConfigurationTest extends TestCase
             'xpaths' => '//*[@id="author"]',
         ]);
 
-        $configurator = \Mockery::mock(Configurator::class);
-
-        $configuration = new Configuration($configurator);
+        $configuration = new Configuration();
         $data          = $configuration->findByType('post');
 
         $this->assertCount(2, $data);
@@ -51,8 +50,9 @@ class ConfigurationTest extends TestCase
         $this->expectExceptionMessage('A dataset example is needed to recalculate xpaths for type post.');
 
         $configurator = \Mockery::mock(Configurator::class);
+        App::instance(Configurator::class, $configurator);
 
-        $configuration = new Configuration($configurator);
+        $configuration = new Configuration();
         $configuration->calculate('post');
     }
 
@@ -109,13 +109,14 @@ class ConfigurationTest extends TestCase
             ->with(Configuration::class . '-config-post', $config, Configuration::CACHE_TTL);
 
         $configurator = \Mockery::mock(Configurator::class);
+        App::instance(Configurator::class, $configurator);
         $configurator->shouldReceive('configureFromDataset')
             ->withArgs(function ($posts) {
                 return 2 == $posts->count();
             })
             ->andReturn($config);
 
-        $configuration = new Configuration($configurator);
+        $configuration = new Configuration();
         $configs       = $configuration->calculate('post');
 
         $this->assertEquals($configs[0]['name'], 'title');
@@ -164,6 +165,7 @@ class ConfigurationTest extends TestCase
             ->andReturnNull();
 
         $configurator = \Mockery::mock(Configurator::class);
+        App::instance(Configurator::class, $configurator);
         $configurator->shouldReceive('configureFromDataset')
             ->withArgs(function ($posts) {
                 return 2 == $posts->count();
@@ -173,7 +175,7 @@ class ConfigurationTest extends TestCase
         $this->expectException(\UnexpectedValueException::class);
         $this->expectExceptionMessage('Recalculate fail');
 
-        $configuration = new Configuration($configurator);
+        $configuration = new Configuration();
         $configuration->calculate('post');
     }
 
@@ -183,6 +185,7 @@ class ConfigurationTest extends TestCase
     public function whenCalculateAfterAnotherCalculateItShouldUseThePrecalclatedConfig()
     {
         $configurator = \Mockery::mock(Configurator::class);
+        App::instance(Configurator::class, $configurator);
         $configurator->shouldReceive('configureFromDataset')
             ->never();
 
@@ -192,7 +195,7 @@ class ConfigurationTest extends TestCase
             ->with(Configuration::class . '-config-post')
             ->andReturn($config);
 
-        $configuration = new Configuration($configurator);
+        $configuration = new Configuration();
         $this->assertEquals(
             $config,
             $configuration->calculate('post')
