@@ -33,7 +33,7 @@ class VariantGenerator
         }
 
         if (empty($this->configPerField) || !$this->allFieldsFound) {
-            return null;
+            return '';
         }
 
         sort($this->configPerField);
