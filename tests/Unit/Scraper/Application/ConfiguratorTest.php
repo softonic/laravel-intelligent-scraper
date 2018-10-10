@@ -6,6 +6,7 @@ use Goutte\Client;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Log;
 use Mockery\Mock;
+use Softonic\LaravelIntelligentScraper\Scraper\Events\ConfigurationScraped;
 use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\ConfigurationException;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration as ConfigurationModel;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
@@ -150,18 +151,18 @@ class ConfiguratorTest extends TestCase
         $this->variantGenerator->shouldReceive('fieldNotFound')
             ->once();
         $this->variantGenerator->shouldReceive('getId')
-            ->andReturnNull();
+            ->andReturn('');
 
         Log::shouldReceive('warning')
             ->with("Field 'author' with value 'My author' not found for 'https://test.c/123456789012'.");
+
+        $this->expectsEvents(ConfigurationScraped::class);
 
         try {
             $this->configurator->configureFromDataset($posts);
         } catch (ConfigurationException $e) {
             $this->assertEquals('Field(s) "author" not found.', $e->getMessage());
         }
-
-        $this->assertNull($posts[0]['variant']);
     }
 
     /**
@@ -225,18 +226,18 @@ class ConfiguratorTest extends TestCase
         $this->variantGenerator->shouldReceive('fieldNotFound')
             ->once();
         $this->variantGenerator->shouldReceive('getId')
-            ->andReturnNull();
+            ->andReturn('');
 
         Log::shouldReceive('warning')
             ->with("Field 'author' with value 'My author' not found for 'https://test.c/123456789012'.");
+
+        $this->expectsEvents(ConfigurationScraped::class);
 
         try {
             $this->configurator->configureFromDataset($posts);
         } catch (ConfigurationException $e) {
             $this->assertEquals('Field(s) "author" not found.', $e->getMessage());
         }
-
-        $this->assertNull($posts[0]['variant']);
     }
 
     /**
@@ -306,7 +307,7 @@ class ConfiguratorTest extends TestCase
         $this->variantGenerator->shouldReceive('fieldNotFound')
             ->times(4);
         $this->variantGenerator->shouldReceive('getId')
-            ->andReturnNull();
+            ->andReturn('');
 
         Log::shouldReceive('warning')
             ->with("Field 'title' with value 'My Title' not found for 'https://test.c/123456789012'.");
@@ -314,14 +315,13 @@ class ConfiguratorTest extends TestCase
         Log::shouldReceive('warning')
             ->with("Field 'author' with value 'My author' not found for 'https://test.c/123456789012'.");
 
+        $this->expectsEvents(ConfigurationScraped::class);
+
         try {
             $this->configurator->configureFromDataset($posts);
         } catch (ConfigurationException $e) {
             $this->assertEquals('Field(s) "title,author" not found.', $e->getMessage());
         }
-
-        $this->assertNull($posts[0]['variant']);
-        $this->assertNull($posts[1]['variant']);
     }
 
     /**
@@ -413,6 +413,8 @@ class ConfiguratorTest extends TestCase
         $this->variantGenerator->shouldReceive('getId')
             ->andReturn(10, 20, 30);
 
+        $this->expectsEvents(ConfigurationScraped::class);
+
         $configurations = $this->configurator->configureFromDataset($posts);
 
         $this->assertInstanceOf(ConfigurationModel::class, $configurations[0]);
@@ -436,9 +438,5 @@ class ConfiguratorTest extends TestCase
             ],
             array_values($configurations[1]['xpaths'])
         );
-
-        $this->assertEquals($posts[0]['variant'], 10);
-        $this->assertEquals($posts[1]['variant'], 20);
-        $this->assertEquals($posts[2]['variant'], 30);
     }
 }

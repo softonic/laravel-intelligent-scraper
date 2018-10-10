@@ -4,6 +4,7 @@ namespace Softonic\LaravelIntelligentScraper;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use Softonic\LaravelIntelligentScraper\Scraper\Application\XpathBuilder;
+use Softonic\LaravelIntelligentScraper\Scraper\Events\ConfigurationScraped;
 use Softonic\LaravelIntelligentScraper\Scraper\Events\InvalidConfiguration;
 use Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped;
 use Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeRequest;
@@ -26,6 +27,9 @@ class ScraperProvider extends EventServiceProvider
             ConfigureScraper::class,
         ],
         Scraped::class              => [
+            UpdateDataset::class,
+        ],
+        ConfigurationScraped::class => [
             UpdateDataset::class,
         ],
     ];
