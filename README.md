@@ -185,6 +185,14 @@ $event->scrapeRequest->url  // Url scraped
 $event->scrapeRequest->type // Request type
 ```
 
+## Advanced usage
+
+There is another event named `ConfigurationScraped` that is triggered when a scrape is done automatically in the
+reconfiguration step. It is exactly the same than `Scraped` event. It is named differently because usually it is not
+interesting to use it apart from internally to update the dataset.
+
+`ConfigurationScraped` can be used to do updates or to know internals about the configuration process.
+
 ### Queue workers
 
 You need to workers, one for the default queue and another for the `configure` queue. The `configure` worker

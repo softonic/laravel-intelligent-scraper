@@ -5,6 +5,8 @@ namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 use Goutte\Client;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Softonic\LaravelIntelligentScraper\Scraper\Events\ConfigurationScraped;
+use Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeRequest;
 use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\ConfigurationException;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
@@ -114,7 +116,14 @@ class Configurator
             }
         }
 
-        $this->updateVariant($scrapedData);
+        event(new ConfigurationScraped(
+            new ScrapeRequest(
+                $scrapedData['url'],
+                $scrapedData['type']
+            ),
+            $scrapedData['data'],
+            $this->variantGenerator->getId($scrapedData['type'])
+        ));
 
         return $result;
     }
@@ -174,11 +183,5 @@ class Configurator
             $fieldsMissing = implode(',', array_diff($fieldsExpected, $fieldsFound));
             throw new ConfigurationException("Field(s) \"{$fieldsMissing}\" not found.", 0);
         }
-    }
-
-    private function updateVariant($scrapedData): void
-    {
-        $scrapedData['variant'] = $this->variantGenerator->getId($scrapedData['type']);
-        $scrapedData->save();
     }
 }
