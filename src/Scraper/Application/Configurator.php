@@ -56,8 +56,10 @@ class Configurator
         $type                 = $scrapedDataset[0]['type'];
         $currentConfiguration = $this->configuration->findByType($type);
 
-        $result = [];
-        foreach ($scrapedDataset as $scrapedData) {
+        $result        = [];
+        $totalDatasets = $scrapedDataset;
+        foreach ($scrapedDataset as $key => $scrapedData) {
+            Log::info("Finding config {$key}/{$totalDatasets}");
             if ($crawler = $this->getCrawler($scrapedData)) {
                 $result[] = $this->findConfigByScrapedData($scrapedData, $crawler, $currentConfiguration);
             }
@@ -149,6 +151,7 @@ class Configurator
         }
 
         Log::debug('Old xpath not found');
+
         return false;
     }
 
