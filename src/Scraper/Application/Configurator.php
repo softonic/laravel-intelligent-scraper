@@ -72,10 +72,15 @@ class Configurator
 
     private function getCrawler($scrapedData)
     {
+        Log::info("Request {$scrapedData['url']}");
         $crawler = $this->client->request('GET', $scrapedData['url']);
 
         $httpCode = $this->client->getInternalResponse()->getStatus();
         if ($httpCode !== 200) {
+            Log::notice(
+                "Response status ({$httpCode}) invalid, so proceeding to delete the scraped dadta.",
+                compact('scrapedData')
+            );
             $scrapedData->delete();
 
             return null;
@@ -101,18 +106,21 @@ class Configurator
 
         foreach ($scrapedData['data'] as $field => $value) {
             try {
+                Log::info("Searching xpath for field {$field}");
                 $result[$field] = $this->getOldXpath($currentConfiguration, $field, $crawler);
                 if (!$result[$field]) {
+                    Log::debug('Trying to find a new xpath.');
                     $result[$field] = $this->xpathBuilder->find(
                         $crawler->getNode(0),
                         $value
                     );
                 }
                 $this->variantGenerator->addConfig($field, $result[$field]);
+                Log::info('Added found xpath to the config');
             } catch (\UnexpectedValueException $e) {
                 $this->variantGenerator->fieldNotFound();
                 $value = is_array($value) ? json_encode($value) : $value;
-                Log::warning("Field '{$field}' with value '{$value}' not found for '{$crawler->getUri()}'.");
+                Log::notice("Field '{$field}' with value '{$value}' not found for '{$crawler->getUri()}'.");
             }
         }
 
@@ -130,14 +138,17 @@ class Configurator
 
     private function getOldXpath($currentConfiguration, $field, $crawler)
     {
+        Log::debug('Checking old Xpaths');
         $config = $currentConfiguration->firstWhere('name', $field);
         foreach ($config['xpaths'] ?? [] as $xpath) {
+            Log::debug("Checking xpath {$xpath}");
             $isFound = $crawler->filterXPath($xpath)->count();
             if ($isFound) {
                 return $xpath;
             }
         }
 
+        Log::debug('Old xpath not found');
         return false;
     }
 

@@ -4,6 +4,7 @@ namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 
 use Goutte\Client;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Log;
 use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\MissingXpathValueException;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration;
 use Tests\TestCase;
@@ -11,6 +12,13 @@ use Tests\TestCase;
 class XpathFinderTest extends TestCase
 {
     use DatabaseMigrations;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        Log::spy();
+    }
 
     /**
      * @test

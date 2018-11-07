@@ -3,6 +3,7 @@
 namespace Softonic\LaravelIntelligentScraper\Scraper\Listeners;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Log;
 use Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped;
 use Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeRequest;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
@@ -19,6 +20,8 @@ class UpdateDatasetTest extends \Tests\TestCase
     public function setUp()
     {
         parent::setUp();
+
+        Log::spy();
 
         $this->updateDataset = new UpdateDataset();
     }

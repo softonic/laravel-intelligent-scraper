@@ -2,6 +2,8 @@
 
 namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 
+use Illuminate\Support\Facades\Log;
+
 class XpathBuilder
 {
     /**
@@ -24,6 +26,8 @@ class XpathBuilder
         $values = (!is_array($values) || array_key_exists(self::REGEXP_COMPARISION, $values))
             ? [$values]
             : $values;
+
+        Log::debug('Trying to find a xpath for the given values', compact('values'));
 
         $nodes = [];
         foreach ($values as $value) {
@@ -108,14 +112,20 @@ class XpathBuilder
 
     private function getXPath(array $nodes)
     {
+        Log::debug('Calculating xpath for the given nodes.');
         $elements = [];
         foreach ($nodes as $node) {
             $elements[] = $this->optimizeElements($node, $this->getPathElements($node));
         }
 
+        Log::debug('Getting common elements between xpaths.');
         $finalElements = (count($elements) > 1) ? $this->getCommonElements($elements) : $elements[0];
 
-        return implode('/', array_reverse($finalElements));
+        Log::debug('Getting common elements between xpaths.');
+        $finalXpath = implode('/', array_reverse($finalElements));
+        Log::debug("Xpath genrated: {$finalXpath}.");
+
+        return $finalXpath;
     }
 
     private function optimizeElements($node, $elements, $childNode = null, $index = 0)

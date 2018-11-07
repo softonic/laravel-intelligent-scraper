@@ -51,6 +51,8 @@ class ConfiguratorTest extends TestCase
         $this->configuration    = \Mockery::mock(Configuration::class);
         $this->variantGenerator = \Mockery::mock(VariantGenerator::class);
 
+        Log::spy();
+
         $this->configurator = new Configurator(
             $this->client,
             $this->xpathBuilder,

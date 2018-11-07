@@ -2,6 +2,7 @@
 
 namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class XpathBuilderTest extends TestCase
@@ -22,6 +23,8 @@ class XpathBuilderTest extends TestCase
 
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom->loadHTML($this->getHtml());
+
+        Log::spy();
 
         $this->domElement   = $dom->documentElement;
         $this->xpathBuilder = new XpathBuilder('/^random-.*$/');
