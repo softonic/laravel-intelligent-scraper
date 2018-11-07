@@ -55,7 +55,7 @@ class ConfigureScraper implements ShouldQueue
             $this->extractData($scrapeRequest, $config);
             $config->map->save();
         } catch (MissingXpathValueException $e) {
-            $this->logger->warning(
+            $this->logger->notice(
                 "Configuration not available for '$scrapeRequest->url' and type '$scrapeRequest->type', error: {$e->getMessage()}."
             );
             event(new ScrapeFailed($invalidConfiguration->scrapeRequest));
@@ -72,7 +72,7 @@ class ConfigureScraper implements ShouldQueue
      */
     private function extractData(ScrapeRequest $scrapeRequest, $config): void
     {
-        $this->logger->debug("Extracting data from $scrapeRequest->url for type '$scrapeRequest->type'");
+        $this->logger->info("Extracting data from $scrapeRequest->url for type '$scrapeRequest->type'");
 
         list('data' => $data, 'variant' => $variant) = $this->xpathFinder->extract($scrapeRequest->url, $config);
         event(new Scraped($scrapeRequest, $data, $variant));

@@ -44,6 +44,8 @@ class ConfigureScraperTest extends TestCase
     {
         parent::setUp();
 
+        Log::spy();
+
         $this->config      = \Mockery::mock(Configuration::class);
         $this->xpathFinder = \Mockery::mock(XpathFinder::class);
         $this->url         = 'http://test.c/123456';

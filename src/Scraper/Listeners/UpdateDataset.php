@@ -3,6 +3,7 @@
 namespace Softonic\LaravelIntelligentScraper\Scraper\Listeners;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
 use Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped;
 use Softonic\LaravelIntelligentScraper\Scraper\Models\ScrapedDataset;
 
@@ -23,6 +24,7 @@ class UpdateDataset implements ShouldQueue
 
     private function addDataset(Scraped $event)
     {
+        Log::info('Adding new information to dataset', ['request' => $event->scrapeRequest]);
         $scraperDatasets = ScrapedDataset::withType($event->scrapeRequest->type)
             ->withVariant($event->variant);
 
@@ -42,6 +44,7 @@ class UpdateDataset implements ShouldQueue
 
     private function updateDataset(ScrapedDataset $dataset, Scraped $event)
     {
+        Log::info('Updating new information to dataset', ['request' => $event->scrapeRequest]);
         $dataset->data = $event->data;
 
         $dataset->save();
