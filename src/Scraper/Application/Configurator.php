@@ -57,7 +57,7 @@ class Configurator
         $currentConfiguration = $this->configuration->findByType($type);
 
         $result        = [];
-        $totalDatasets = $scrapedDataset;
+        $totalDatasets = count($scrapedDataset);
         foreach ($scrapedDataset as $key => $scrapedData) {
             Log::info("Finding config {$key}/{$totalDatasets}");
             if ($crawler = $this->getCrawler($scrapedData)) {
