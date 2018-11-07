@@ -80,7 +80,7 @@ class Configurator
         $httpCode = $this->client->getInternalResponse()->getStatus();
         if ($httpCode !== 200) {
             Log::notice(
-                "Response status ({$httpCode}) invalid, so proceeding to delete the scraped dadta.",
+                "Response status ({$httpCode}) invalid, so proceeding to delete the scraped data.",
                 compact('scrapedData')
             );
             $scrapedData->delete();

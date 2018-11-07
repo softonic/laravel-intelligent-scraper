@@ -123,7 +123,7 @@ class XpathBuilder
 
         Log::debug('Getting common elements between xpaths.');
         $finalXpath = implode('/', array_reverse($finalElements));
-        Log::debug("Xpath genrated: {$finalXpath}.");
+        Log::debug("Xpath generated: {$finalXpath}.");
 
         return $finalXpath;
     }
