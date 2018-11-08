@@ -3,6 +3,8 @@
 namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 
 use Goutte\Client;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Log;
 use Mockery\Mock;
@@ -64,7 +66,7 @@ class ConfiguratorTest extends TestCase
     /**
      * @test
      */
-    public function whenTryToFindNewXpathButUrlFromDatasetIsNotValidThrowAnExceptionAndRemoveIt()
+    public function whenTryToFindNewXpathButUrlFromDatasetIsNotFoundThrowAnExceptionAndRemoveIt()
     {
         $posts = [
             new ScrapedDataset([
@@ -77,16 +79,55 @@ class ConfiguratorTest extends TestCase
             ]),
         ];
 
+        $requestException = \Mockery::mock(RequestException::class);
+        $requestException->shouldReceive('getResponse->getStatusCode')
+            ->once()
+            ->andReturn(404);
         $this->client->shouldReceive('request')
             ->once()
             ->with(
                 'GET',
                 'https://test.c/123456789012'
             )
-            ->andReturnSelf();
-        $this->client->shouldReceive('getInternalResponse->getStatus')
+            ->andThrows($requestException);
+
+        $this->configuration->shouldReceive('findByType')
             ->once()
-            ->andReturn(404);
+            ->with('post')
+            ->andReturn(collect());
+
+        try {
+            $this->configurator->configureFromDataset($posts);
+        } catch (ConfigurationException $e) {
+            $this->assertEquals('Field(s) "title,author" not found.', $e->getMessage());
+            $this->assertDatabaseMissing('scraped_datasets', ['url' => 'https://test.c/123456789012']);
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function whenTryToFindNewXpathButUrlFromDatasetIsNotAvailableThrowAnExceptionAndRemoveIt()
+    {
+        $posts = [
+            new ScrapedDataset([
+                'url'  => 'https://test.c/123456789012',
+                'type' => 'post',
+                'data' => [
+                    'title'  => 'My Title',
+                    'author' => 'My author',
+                ],
+            ]),
+        ];
+
+        $connectException = \Mockery::mock(ConnectException::class);
+        $this->client->shouldReceive('request')
+            ->once()
+            ->with(
+                'GET',
+                'https://test.c/123456789012'
+            )
+            ->andThrows($connectException);
 
         $this->configuration->shouldReceive('findByType')
             ->once()
@@ -125,9 +166,6 @@ class ConfiguratorTest extends TestCase
                 'https://test.c/123456789012'
             )
             ->andReturnSelf();
-        $this->client->shouldReceive('getInternalResponse->getStatus')
-            ->once()
-            ->andReturn(200);
 
         $rootElement = new \DOMElement('test');
         $this->client->shouldReceive('getNode')
@@ -191,9 +229,6 @@ class ConfiguratorTest extends TestCase
                 'https://test.c/123456789012'
             )
             ->andReturnSelf();
-        $this->client->shouldReceive('getInternalResponse->getStatus')
-            ->once()
-            ->andReturn(200);
 
         $rootElement = new \DOMElement('test');
         $this->client->shouldReceive('getNode')
@@ -282,8 +317,6 @@ class ConfiguratorTest extends TestCase
                 'https://test.c/123456789022'
             )
             ->andReturnSelf();
-        $this->client->shouldReceive('getInternalResponse->getStatus')
-            ->andReturn(200);
         $this->client->shouldReceive('getUri')
             ->andReturn('https://test.c/123456789012');
 
@@ -382,8 +415,6 @@ class ConfiguratorTest extends TestCase
                 'https://test.c/123456789033'
             )
             ->andReturnSelf();
-        $this->client->shouldReceive('getInternalResponse->getStatus')
-            ->andReturn(200);
 
         $rootElement = new \DOMElement('test');
         $this->client->shouldReceive('getNode')

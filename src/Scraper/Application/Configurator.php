@@ -3,6 +3,8 @@
 namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 
 use Goutte\Client;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Softonic\LaravelIntelligentScraper\Scraper\Events\ConfigurationScraped;
@@ -74,21 +76,24 @@ class Configurator
 
     private function getCrawler($scrapedData)
     {
-        Log::info("Request {$scrapedData['url']}");
-        $crawler = $this->client->request('GET', $scrapedData['url']);
+        try {
+            Log::info("Request {$scrapedData['url']}");
 
-        $httpCode = $this->client->getInternalResponse()->getStatus();
-        if ($httpCode !== 200) {
+            return $this->client->request('GET', $scrapedData['url']);
+        } catch (ConnectException $e) {
+            Log::notice(
+                "Connection error: {$e->getMessage()}",
+                compact('scrapedData')
+            );
+            $scrapedData->delete();
+        } catch (RequestException $e) {
+            $httpCode = $e->getResponse()->getStatusCode() ?? null;
             Log::notice(
                 "Response status ({$httpCode}) invalid, so proceeding to delete the scraped data.",
                 compact('scrapedData')
             );
             $scrapedData->delete();
-
-            return null;
         }
-
-        return $crawler;
     }
 
     /**
