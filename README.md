@@ -21,6 +21,34 @@ To publish the scraper config, you can use
 ```bash
 php artisan vendor:publish --provider="Softonic\LaravelIntelligentScraper\ScraperProvider" --tag=config
 ```
+### Dependencies
+
+This package depends on [goutte](https://packagist.org/packages/fabpot/goutte) that depends on [guzzle](https://packagist.org/packages/guzzle/guzzle), so you can customize the client to
+your requisites. The only requirement for this package is that you must include the `http_error` midleware in the
+handle stack.
+
+Example:
+```php
+<?php
+
+use GuzzleHttp\Handler\CurlHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use Goutte\Client as GoutteClient;
+use App\MyMiddleware;
+
+$client = new GoutteClient();
+$stack = new HandlerStack();
+
+$stack->setHandler(new CurlHandler());
+$stack->push(MyMiddleware::getHandler(), 'my_middleware'); // Your custom middleware
+$stack->push(Middleware::httpErrors(), 'http_errors'); // Required middleware for the package
+
+$guzzleClient = new GuzzleClient(['handler' => $stack]);
+$client->setClient($guzzleClient);
+```
+
+The default stack already has the http_errors middleware, so you only need to do this if you are not using the default stack.
 
 ## Configuration
 

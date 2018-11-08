@@ -3,6 +3,8 @@
 namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 
 use Goutte\Client as GoutteClient;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Log;
 use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\MissingXpathValueException;
 
@@ -26,15 +28,9 @@ class XpathFinder
 
     public function extract(string $url, $configs): array
     {
-        Log::info("Requesting $url");
-        $crawler  = $this->client->request('GET', $url);
-        $httpCode = $this->client->getInternalResponse()->getStatus();
-        if ($httpCode !== 200) {
-            Log::info('Invalid response http status', ['status' => $httpCode]);
-            throw new \UnexpectedValueException("Response error from '{$url}' with '{$httpCode}' http code");
-        }
+        $crawler = $this->getCrawler($url);
 
-        Log::info('Response Received. Starting crawler.');
+        Log::info('Response Received. Start crawling.');
         $result = [];
         foreach ($configs as $config) {
             Log::info("Searching field {$config['name']}.");
@@ -67,5 +63,21 @@ class XpathFinder
         Log::info('Variant calculated.');
 
         return $result;
+    }
+
+    private function getCrawler(string $url)
+    {
+        try {
+            Log::info("Requesting $url");
+
+            return $this->client->request('GET', $url);
+        } catch (ConnectException $e) {
+            Log::info("Unavailable url '{$url}'", ['message' => $e->getMessage()]);
+            throw new \UnexpectedValueException("Unavailable url '{$url}'");
+        } catch (RequestException $e) {
+            $httpCode = $e->getResponse()->getStatusCode();
+            Log::info('Invalid response http status', ['status' => $httpCode]);
+            throw new \UnexpectedValueException("Response error from '{$url}' with '{$httpCode}' http code");
+        }
     }
 }

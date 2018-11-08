@@ -3,6 +3,8 @@
 namespace Softonic\LaravelIntelligentScraper\Scraper\Application;
 
 use Goutte\Client;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Log;
 use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\MissingXpathValueException;
@@ -23,7 +25,7 @@ class XpathFinderTest extends TestCase
     /**
      * @test
      */
-    public function whenExtractUsingAnInvalidUrlItShouldThrowAnException()
+    public function whenExtractUsingAnInvalidUrlStatusItShouldThrowAnException()
     {
         $config = [
             Configuration::create([
@@ -34,6 +36,12 @@ class XpathFinderTest extends TestCase
         ];
 
         $variantGenerator = \Mockery::mock(VariantGenerator::class);
+
+        $requestException = \Mockery::mock(RequestException::class);
+        $requestException->shouldReceive('getResponse->getStatusCode')
+            ->once()
+            ->andReturn(404);
+
         $client = \Mockery::mock(Client::class);
         $client->shouldReceive('request')
             ->once()
@@ -41,14 +49,42 @@ class XpathFinderTest extends TestCase
                 'GET',
                 'url'
             )
-            ->andReturnSelf();
-
-        $client->shouldReceive('getInternalResponse->getStatus')
-            ->once()
-            ->andReturn(404);
+            ->andThrows($requestException);
 
         $this->expectException(\UnexpectedValueException::class);
         $this->expectExceptionMessage('Response error from \'url\' with \'404\' http code');
+
+        $xpathFinder = new XpathFinder($client, $variantGenerator);
+        $xpathFinder->extract('url', $config);
+    }
+
+    /**
+     * @test
+     */
+    public function whenExtractUsingAnUnavailableUrlItShouldThrowAnException()
+    {
+        $config = [
+            Configuration::create([
+                'name'   => 'title',
+                'type'   => 'post',
+                'xpaths' => ['//*[@id="title"]'],
+            ]),
+        ];
+
+        $variantGenerator = \Mockery::mock(VariantGenerator::class);
+
+        $connectException = \Mockery::mock(ConnectException::class);
+        $client           = \Mockery::mock(Client::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'GET',
+                'url'
+            )
+            ->andThrows($connectException);
+
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('Unavailable url \'url\'');
 
         $xpathFinder = new XpathFinder($client, $variantGenerator);
         $xpathFinder->extract('url', $config);
@@ -73,7 +109,7 @@ class XpathFinderTest extends TestCase
         $internalXpathFinder = \Mockery::mock(\Symfony\Component\DomCrawler\Crawler::class);
 
         $variantGenerator = \Mockery::mock(VariantGenerator::class);
-        $client = \Mockery::mock(Client::class);
+        $client           = \Mockery::mock(Client::class);
         $client->shouldReceive('request')
             ->once()
             ->with(
@@ -81,9 +117,6 @@ class XpathFinderTest extends TestCase
                 'url'
             )
             ->andReturn($internalXpathFinder);
-        $client->shouldReceive('getInternalResponse->getStatus')
-            ->once()
-            ->andReturn(200);
 
         $internalXpathFinder->shouldReceive('filterXPath')
             ->once()
@@ -145,9 +178,6 @@ class XpathFinderTest extends TestCase
                 'url'
             )
             ->andReturn($internalXpathFinder);
-        $client->shouldReceive('getInternalResponse->getStatus')
-            ->once()
-            ->andReturn(200);
 
         $internalXpathFinder->shouldReceive('filterXPath')
             ->once()
