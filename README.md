@@ -187,11 +187,11 @@ specific page, you you can write a list of Xpath that will be checked in order g
 
 ## Usage
 
-After configure the scraper, you will be able to request an specific scrape using the `scraoe` helper
+After configure the scraper, you will be able to request an specific scrape using the `scrape` helper
 ```php
 <?php 
 
-scrape('https://test.c/p/my-objective', 'Item-definition-1', 'variant-sha1');
+scrape('https://test.c/p/my-objective', 'Item-definition-1');
 ```
 
 The scrape will produce a `\Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped` event if all worked as expected.
