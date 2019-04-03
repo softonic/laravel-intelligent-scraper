@@ -10,6 +10,7 @@ use Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped;
 use Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeRequest;
 use Softonic\LaravelIntelligentScraper\Scraper\Listeners\ConfigureScraper;
 use Softonic\LaravelIntelligentScraper\Scraper\Listeners\Scrape;
+use Softonic\LaravelIntelligentScraper\Scraper\Listeners\ScrapedListener;
 use Softonic\LaravelIntelligentScraper\Scraper\Listeners\UpdateDataset;
 
 class ScraperProvider extends EventServiceProvider
@@ -28,6 +29,7 @@ class ScraperProvider extends EventServiceProvider
         ],
         Scraped::class              => [
             UpdateDataset::class,
+            ScrapedListener::class
         ],
         ConfigurationScraped::class => [
             UpdateDataset::class,
