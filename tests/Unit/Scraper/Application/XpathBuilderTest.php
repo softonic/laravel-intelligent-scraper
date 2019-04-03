@@ -17,7 +17,7 @@ class XpathBuilderTest extends TestCase
      */
     private $xpathBuilder;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

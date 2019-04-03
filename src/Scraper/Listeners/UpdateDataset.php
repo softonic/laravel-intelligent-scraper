@@ -25,13 +25,6 @@ class UpdateDataset implements ShouldQueue
     private function addDataset(Scraped $event)
     {
         Log::info('Adding new information to dataset', ['request' => $event->scrapeRequest]);
-        $scraperDatasets = ScrapedDataset::withType($event->scrapeRequest->type)
-            ->withVariant($event->variant);
-
-        if (self::DATASET_AMOUNT_LIMIT <= $scraperDatasets->count()) {
-            $scraperDatasets->orderBy('updated_at', 'desc')->first()->delete();
-        }
-
         ScrapedDataset::create(
             [
                 'url'     => $event->scrapeRequest->url,
@@ -40,6 +33,8 @@ class UpdateDataset implements ShouldQueue
                 'data'    => $event->data,
             ]
         );
+
+        $this->deleteExceededDataset($event);
     }
 
     private function updateDataset(ScrapedDataset $dataset, Scraped $event)
@@ -48,5 +43,26 @@ class UpdateDataset implements ShouldQueue
         $dataset->data = $event->data;
 
         $dataset->save();
+    }
+
+    private function deleteExceededDataset($event): void
+    {
+        $scraperDatasets = ScrapedDataset::withType($event->scrapeRequest->type)
+            ->withVariant($event->variant);
+
+        $datasetAmountAvailable = $scraperDatasets->count();
+
+        if (self::DATASET_AMOUNT_LIMIT <= $datasetAmountAvailable) {
+            $datasetToBeDeleted = $datasetAmountAvailable - self::DATASET_AMOUNT_LIMIT;
+            Log::debug('Deleting old dataset information', [
+                'limit'       => self::DATASET_AMOUNT_LIMIT,
+                'current'     => $datasetAmountAvailable,
+                'toBeDeleted' => $datasetToBeDeleted,
+            ]);
+
+            $scraperDatasets->orderBy('updated_at', 'desc')
+                ->take($datasetToBeDeleted)
+                ->delete();
+        }
     }
 }

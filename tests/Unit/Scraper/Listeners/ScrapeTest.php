@@ -43,7 +43,7 @@ class ScrapeTest extends TestCase
      */
     private $scrapeRequest;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

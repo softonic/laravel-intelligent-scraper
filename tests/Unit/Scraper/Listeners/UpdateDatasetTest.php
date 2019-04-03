@@ -17,7 +17,7 @@ class UpdateDatasetTest extends \Tests\TestCase
      */
     private $updateDataset;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -86,9 +86,9 @@ class UpdateDatasetTest extends \Tests\TestCase
     /**
      * @test
      */
-    public function whenDatasetDoesNotExistAndTheDatasetsLimitHasReachedItShouldReplaceTheOldest()
+    public function whenDatasetDoesNotExistAndTheDatasetsLimitHasReachedItShouldDeleteTheExcess()
     {
-        factory(ScrapedDataset::class, UpdateDataset::DATASET_AMOUNT_LIMIT)->create([
+        factory(ScrapedDataset::class, UpdateDataset::DATASET_AMOUNT_LIMIT + 10)->create([
             'variant' => 'b265521fc089ac61b794bfa3a5ce8a657f6833ce',
         ]);
 

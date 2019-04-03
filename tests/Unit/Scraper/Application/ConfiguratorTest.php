@@ -44,7 +44,7 @@ class ConfiguratorTest extends TestCase
      */
     private $configurator;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
