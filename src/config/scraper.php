@@ -13,4 +13,21 @@ return [
          */
         'ignore-identifiers' => '/^react_.*$/',
     ],
+    /*
+     * Configure listener per Scraped type
+     *
+     * Format:
+     *      [
+     *          'type' => 'handler class',
+     *      ].
+     *
+     * Example:
+     *      [
+     *          'news' => App\NewsHandler::class,
+     *          'post' => App\PostHandler::class
+     *      ]
+     */
+    'listeners' => [
+        //
+    ],
 ];
