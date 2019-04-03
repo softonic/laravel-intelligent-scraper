@@ -2,7 +2,6 @@
 
 namespace Softonic\LaravelIntelligentScraper\Scraper\Listeners;
 
-use Mockery\Mock;
 use Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped;
 use Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeRequest;
 use Tests\TestCase;
@@ -12,8 +11,14 @@ class ScrapedListenerTest extends TestCase
     /**
      * @test
      */
-    public function whenReceiveAnUnknownScrapedTypeItShouldThrowAnException(){
-        $scrapedListener = new ScrapedListener([]);
+    public function whenReceiveAnUnknownScrapedTypeItShouldDoNothing()
+    {
+        $listener = \Mockery::mock(ScrapedListener::class);
+        \App::instance(get_class($listener), $listener);
+
+        $scrapedListener = new ScrapedListener([
+            'known_type' => get_class($listener),
+        ]);
 
         $scrapedEvent = new Scraped(
             new ScrapeRequest(
@@ -24,7 +29,7 @@ class ScrapedListenerTest extends TestCase
             1
         );
 
-        $this->expectException(\InvalidArgumentException::class);
+        $listener->shouldNotReceive('handle');
 
         $scrapedListener->handle($scrapedEvent);
     }
@@ -32,12 +37,13 @@ class ScrapedListenerTest extends TestCase
     /**
      * @test
      */
-    public function whenReceiveAKnownScrapedTypeItShouldHandleTheEventWithTheSpecificDependency(){
+    public function whenReceiveAKnownScrapedTypeItShouldHandleTheEventWithTheSpecificDependency()
+    {
         $listener = \Mockery::mock(ScrapedListener::class);
         \App::instance(get_class($listener), $listener);
 
         $scrapedListener = new ScrapedListener([
-            'known_type' => get_class($listener)
+            'known_type' => get_class($listener),
         ]);
 
         $scrapedEvent = new Scraped(

@@ -15,10 +15,8 @@ class ScrapedListener
 
     public function handle(Scraped $scraped)
     {
-        if (!isset($this->listeners[$scraped->scrapeRequest->type])) {
-            throw new \InvalidArgumentException();
+        if (isset($this->listeners[$scraped->scrapeRequest->type])) {
+            resolve($this->listeners[$scraped->scrapeRequest->type])->handle($scraped);
         }
-
-        resolve($this->listeners[$scraped->scrapeRequest->type])->handle($scraped);
     }
 }

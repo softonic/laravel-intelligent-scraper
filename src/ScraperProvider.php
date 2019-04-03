@@ -29,7 +29,7 @@ class ScraperProvider extends EventServiceProvider
         ],
         Scraped::class              => [
             UpdateDataset::class,
-            ScrapedListener::class
+            ScrapedListener::class,
         ],
         ConfigurationScraped::class => [
             UpdateDataset::class,
@@ -70,6 +70,12 @@ class ScraperProvider extends EventServiceProvider
             ->needs('$idsToIgnore')
             ->give(function () {
                 return config('scraper.xpath.ignore-identifiers');
+            });
+
+        $this->app->when(ScrapedListener::class)
+            ->needs('$listeners')
+            ->give(function () {
+                return config('scraper.listeners');
             });
     }
 }
