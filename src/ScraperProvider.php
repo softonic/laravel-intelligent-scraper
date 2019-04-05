@@ -11,6 +11,7 @@ use Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeRequest;
 use Softonic\LaravelIntelligentScraper\Scraper\Listeners\ConfigureScraper;
 use Softonic\LaravelIntelligentScraper\Scraper\Listeners\Scrape;
 use Softonic\LaravelIntelligentScraper\Scraper\Listeners\ScrapedListener;
+use Softonic\LaravelIntelligentScraper\Scraper\Listeners\ScrapeFailedListener;
 use Softonic\LaravelIntelligentScraper\Scraper\Listeners\UpdateDataset;
 
 class ScraperProvider extends EventServiceProvider
@@ -75,7 +76,13 @@ class ScraperProvider extends EventServiceProvider
         $this->app->when(ScrapedListener::class)
             ->needs('$listeners')
             ->give(function () {
-                return config('scraper.listeners');
+                return config('scraper.listeners.scraped');
+            });
+
+        $this->app->when(ScrapeFailedListener::class)
+            ->needs('$listeners')
+            ->give(function () {
+                return config('scraper.listeners.scrape-failed');
             });
     }
 }

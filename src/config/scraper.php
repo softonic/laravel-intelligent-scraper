@@ -14,20 +14,31 @@ return [
         'ignore-identifiers' => '/^react_.*$/',
     ],
     /*
-     * Configure listener per Scraped type
+     * Configure listener per event type
      *
      * Format:
      *      [
      *          'type' => 'handler class',
      *      ].
      *
+     * Declare in the "scraped" key the listener you want to attend the scrapes done successfully.
+     * Declare in the "scrape-failed" key the listener you want to attend the scrapes that could not retrieve the
+     * information.
+     *
      * Example:
-     *      [
-     *          'news' => App\NewsHandler::class,
-     *          'post' => App\PostHandler::class
-     *      ]
+     * 'scraped' => [
+     *       'post' => App\CreatePostHandler::class
+     *   ],
+     *   'scrape-failed' => [
+     *       'post' => App\NotifyErrorHandler::class
+     *   ]
      */
     'listeners' => [
-        //
+        'scraped' => [
+            //
+        ],
+        'scrape-failed' => [
+            //
+        ],
     ],
 ];
