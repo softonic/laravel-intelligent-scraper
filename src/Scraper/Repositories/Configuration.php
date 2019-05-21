@@ -17,11 +17,11 @@ class Configuration
     private $configurator;
 
     /**
-     * Cache TTL in minutes.
+     * Cache TTL in seconds.
      *
      * This is the time between config calculations.
      */
-    const CACHE_TTL = 30;
+    const CACHE_TTL = 1800;
 
     public function findByType(string $type): Collection
     {
