@@ -8,6 +8,8 @@ matrix:
     env: STATIC_ANALYSIS=true VALIDATE_CODING_STYLE=true
   - php: 7.2
     env: STATIC_ANALYSIS=true VALIDATE_CODING_STYLE=true
+  - php: 7.3
+    env: STATIC_ANALYSIS=true VALIDATE_CODING_STYLE=true
   - php: master
     env: STATIC_ANALYSIS=true VALIDATE_CODING_STYLE=false
   allow_failures:
