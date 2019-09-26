@@ -3,7 +3,12 @@
 [![Latest Version](https://img.shields.io/github/release/softonic/laravel-intelligent-scraper.svg?style=flat-square)](https://github.com/softonic/laravel-intelligent-scraper/releases)
 [![Software License](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](LICENSE.md)
 [![Build Status](https://img.shields.io/travis/softonic/laravel-intelligent-scraper/master.svg?style=flat-square)](https://travis-ci.org/softonic/laravel-intelligent-scraper)
+[![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/softonic/laravel-intelligent-scraper.svg?style=flat-square)](https://scrutinizer-ci.com/g/softonic/laravel-intelligent-scraper/code-structure)
+[![Quality Score](https://img.shields.io/scrutinizer/g/softonic/laravel-intelligent-scraper.svg?style=flat-square)](https://scrutinizer-ci.com/g/softonic/laravel-intelligent-scraper)
 [![Total Downloads](https://img.shields.io/packagist/dt/softonic/laravel-intelligent-scraper.svg?style=flat-square)](https://packagist.org/packages/softonic/laravel-intelligent-scraper)
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/softonic/laravel-intelligent-scraper.svg?style=flat-square)](http://isitmaintained.com/project/softonic/laravel-intelligent-scraper "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/softonic/laravel-intelligent-scraper.svg?style=flat-square)](http://isitmaintained.com/project/softonic/laravel-intelligent-scraper "Percentage of issues still open")
+
 
 This packages offers a scraping solution that doesn't require to know the web HTML structure and it is autoconfigured
 when some change is detected in the HTML structure. This allows you to continue scraping without manual intervention
