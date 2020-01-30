@@ -3,8 +3,9 @@
 namespace Softonic\LaravelIntelligentScraper\Scraper\Listeners;
 
 use Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class ScrapedListener
+class ScrapedListener implements ShouldQueue
 {
     private $listeners;
 
