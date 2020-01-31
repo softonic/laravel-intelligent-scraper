@@ -121,10 +121,10 @@ class ConfigurationTest extends TestCase
 
         $this->assertEquals($configs[0]['name'], 'title');
         $this->assertEquals($configs[0]['type'], 'post');
-        $this->assertEquals($configs[0]['xpaths'], '//*[@id="title"]');
+        $this->assertEquals($configs[0]['xpaths'][0], '//*[@id="title"]');
         $this->assertEquals($configs[1]['name'], 'author');
         $this->assertEquals($configs[1]['type'], 'post');
-        $this->assertEquals($configs[1]['xpaths'], '//*[@id="author"]');
+        $this->assertEquals($configs[1]['xpaths'][0], '//*[@id="author"]');
     }
 
     /**

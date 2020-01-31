@@ -3,6 +3,7 @@
 namespace Softonic\LaravelIntelligentScraper\Scraper\Listeners;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Collection;
 use Psr\Log\LoggerInterface;
 use Softonic\LaravelIntelligentScraper\Scraper\Application\XpathFinder;
 use Softonic\LaravelIntelligentScraper\Scraper\Events\InvalidConfiguration;
@@ -52,12 +53,7 @@ class Scrape implements ShouldQueue
         }
     }
 
-    /**
-     * @param ScrapeRequest $scrapeRequest
-     *
-     * @return mixed
-     */
-    private function loadConfiguration(ScrapeRequest $scrapeRequest)
+    private function loadConfiguration(ScrapeRequest $scrapeRequest): Collection
     {
         $this->logger->info("Loading scrapping configuration for type '$scrapeRequest->type'");
 
@@ -69,15 +65,11 @@ class Scrape implements ShouldQueue
         return $config;
     }
 
-    /**
-     * @param ScrapeRequest $scrapeRequest
-     * @param               $config
-     */
-    private function extractData(ScrapeRequest $scrapeRequest, $config): void
+    private function extractData(ScrapeRequest $scrapeRequest, Collection $config): void
     {
         $this->logger->info("Extracting data from $scrapeRequest->url for type '$scrapeRequest->type'");
 
-        list('data' => $data, 'variant' => $variant) = $this->xpathFinder->extract($scrapeRequest->url, $config);
+        ['data' => $data, 'variant' => $variant] = $this->xpathFinder->extract($scrapeRequest->url, $config);
         event(new Scraped($scrapeRequest, $data, $variant));
     }
 }
