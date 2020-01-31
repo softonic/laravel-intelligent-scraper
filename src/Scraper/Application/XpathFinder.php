@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Log;
 use Softonic\LaravelIntelligentScraper\Scraper\Exceptions\MissingXpathValueException;
+use Softonic\LaravelIntelligentScraper\Scraper\Models\Configuration;
 
 class XpathFinder
 {
@@ -26,6 +27,12 @@ class XpathFinder
         $this->variantGenerator = $variantGenerator;
     }
 
+    /**
+     * @param string          $url
+     * @param Configuration[] $configs
+     *
+     * @return array
+     */
     public function extract(string $url, $configs): array
     {
         $crawler = $this->getCrawler($url);

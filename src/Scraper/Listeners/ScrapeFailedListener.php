@@ -2,8 +2,8 @@
 
 namespace Softonic\LaravelIntelligentScraper\Scraper\Listeners;
 
-use Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeFailed;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeFailed;
 
 class ScrapeFailedListener implements ShouldQueue
 {
