@@ -199,14 +199,25 @@ After configure the scraper, you will be able to request an specific scrape usin
 scrape('https://test.c/p/my-objective', 'Item-definition-1');
 ```
 
+There is an optional parameter called `context` that allows you to set a context to the scrapeRequest so you will
+be able to access that context in your listener. This is useful if you need some additional data (out of the scraped
+data) to work in your listener.
+
+```php
+<?php
+
+scrape('https://test.c/p/my-objective', 'Item-definition-1', ['id' => 'my-objective']);
+```
+
 The scrape will produce a `\Softonic\LaravelIntelligentScraper\Scraper\Events\Scraped` event if all worked as expected.
 So attach a listener to that event to receive the data.
 
 ```php
-$event->scrapeRequest->url  // Url scraped
-$event->scrapeRequest->type // Request type
-$event->data // Contains all the data in a [ 'fieldName' => 'value' ] format.
-$event->variant // Contains the page variation sha1 hash.
+$event->scrapeRequest->url;  // Url scraped
+$event->scrapeRequest->type; // Request type
+$event->scrapeRequest->context; // Context
+$event->data; // Contains all the data in a [ 'fieldName' => 'value' ] format.
+$event->variant; // Contains the page variation sha1 hash.
 ```
 
 All the output fields are arrays that can contain one or more results.
@@ -214,8 +225,38 @@ All the output fields are arrays that can contain one or more results.
 If the scrape fails a `\Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeFailed` event is fired with the
 scrape request information.
 ```php
-$event->scrapeRequest->url  // Url scraped
-$event->scrapeRequest->type // Request type
+$event->scrapeRequest->url;  // Url scraped
+$event->scrapeRequest->type; // Request type
+$event->scrapeRequest->context; // Context
+```
+
+To attach the listener, you can use the Laravel listener configuration like:
+```php
+// providers/EventServiceProvider
+    protected $listen = [
+        Scraped::class => [
+            MyListener::class,
+        ],
+        ScrapeFailed::class => [
+            MyListenerFirFailedScrapes::class,
+        ],
+    ];
+```
+
+But the scrapes from all types will go to that listeners. To simplify the listeners and just listen scrapes from a
+single type, there is a `listeners` configuration available at scraper.php, so you can configure the listeners
+with greater granularity.
+```php
+    // config/scrapper.php
+    'listeners' => [
+        'scraped' => [
+            'my-type-1' => ListenerForTypeOne::class,
+            'my-type-2' => ListenerForTypeTwo::class,
+        ],
+        'scrape-failed' => [
+            'my-type-1' => ListenerFailedForTypeOne::class,
+        ],
+    ];
 ```
 
 ## Advanced usage

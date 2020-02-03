@@ -20,15 +20,22 @@ class ScrapeRequest
     public $type;
 
     /**
+     * @var array
+     */
+    public $context;
+
+    /**
      * Create a new event instance.
      *
      * @param string $url
      * @param string $type
+     * @param array  $context
      */
-    public function __construct(string $url, string $type)
+    public function __construct(string $url, string $type, array $context = [])
     {
-        $this->url  = $url;
-        $this->type = $type;
+        $this->url     = $url;
+        $this->type    = $type;
+        $this->context = $context;
     }
 
     /**
@@ -42,10 +49,6 @@ class ScrapeRequest
      */
     public function tags()
     {
-        $type    = $this->type;
-
-        return [
-            "request_type:$type",
-        ];
+        return ["request_type:{$this->type}"];
     }
 }
