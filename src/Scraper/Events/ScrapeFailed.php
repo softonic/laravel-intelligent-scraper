@@ -35,10 +35,8 @@ class ScrapeFailed
      */
     public function tags()
     {
-        $type    = $this->scrapeRequest->type;
-
         return [
-            "failed_type:$type",
+            "failed_type:{$this->scrapeRequest->type}",
         ];
     }
 }

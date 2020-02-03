@@ -25,10 +25,8 @@ class InvalidConfiguration
      */
     public function tags()
     {
-        $type    = $this->scrapeRequest->type;
-
         return [
-            "reconfigure_type:$type",
+            "reconfigure_type:{$this->scrapeRequest->type}",
         ];
     }
 }
