@@ -8,8 +8,8 @@ if (!function_exists('regexp')) {
 }
 
 if (!function_exists('scrape')) {
-    function scrape($url, $type)
+    function scrape($url, $type, $context = [])
     {
-        event(new \Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeRequest($url, $type));
+        event(new \Softonic\LaravelIntelligentScraper\Scraper\Events\ScrapeRequest($url, $type, $context));
     }
 }

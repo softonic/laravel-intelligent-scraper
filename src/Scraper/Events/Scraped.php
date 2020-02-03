@@ -49,12 +49,9 @@ class Scraped
      */
     public function tags()
     {
-        $type    = $this->scrapeRequest->type;
-        $variant = $this->variant;
-
         return [
-            "scraped_type:$type",
-            "scraped_variant:$variant",
+            "scraped_type:{$this->scrapeRequest->type}",
+            "scraped_variant:{$this->variant}",
         ];
     }
 }

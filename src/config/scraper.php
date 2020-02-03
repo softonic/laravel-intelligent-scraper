@@ -35,10 +35,8 @@ return [
      */
     'listeners' => [
         'scraped' => [
-            //
         ],
         'scrape-failed' => [
-            //
         ],
     ],
 ];
