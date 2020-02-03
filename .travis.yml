@@ -29,7 +29,7 @@ install:
 - travis_retry composer update --no-interaction --prefer-source
 
 script:
-- composer run test
+- composer phpunit
 
 after_script:
 - if [ "$VALIDATE_CODING_STYLE" == "true" ]; then composer phpcs; fi
