@@ -5,7 +5,7 @@ services:
     volumes:
     - ./:/app
     image: ricc/composer-prestissimo:latest
-    command: composer run test
+    command: composer phpunit
 
   fixcs:
     volumes:

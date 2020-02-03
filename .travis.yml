@@ -10,6 +10,8 @@ matrix:
     env: STATIC_ANALYSIS=true VALIDATE_CODING_STYLE=true
   - php: 7.3
     env: STATIC_ANALYSIS=true VALIDATE_CODING_STYLE=true
+  - php: 7.4
+    env: STATIC_ANALYSIS=true VALIDATE_CODING_STYLE=true
   - php: master
     env: STATIC_ANALYSIS=true VALIDATE_CODING_STYLE=false
   allow_failures:
@@ -27,7 +29,7 @@ install:
 - travis_retry composer update --no-interaction --prefer-source
 
 script:
-- composer phpunit
+- composer run test
 
 after_script:
 - if [ "$VALIDATE_CODING_STYLE" == "true" ]; then composer phpcs; fi
