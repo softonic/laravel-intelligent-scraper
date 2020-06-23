@@ -26,6 +26,12 @@ To publish the scraper config, you can use
 ```bash
 php artisan vendor:publish --provider="Softonic\LaravelIntelligentScraper\ScraperProvider" --tag=config
 ```
+
+The migrations for database are registered in the service provider, so you can execute the migrate command to create the needed tables.
+```bash
+php artisan migrate
+```
+
 ### Dependencies
 
 This package depends on [goutte](https://packagist.org/packages/fabpot/goutte) that depends on [guzzle](https://packagist.org/packages/guzzle/guzzle), so you can customize the client to
