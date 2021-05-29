@@ -2,9 +2,9 @@ name: PHP Composer
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [ master ]
   pull_request:
-    branches: [ $default-branch ]
+    branches: [ master ]
 
 jobs:
   build:
@@ -30,3 +30,6 @@ jobs:
 
     - name: Run test suite
       run: composer run-script test
+
+    - name: PHP_CodeSniffer Check with Annotations
+      uses: chekalsky/phpcs-action@v1.2.0
