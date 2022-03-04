@@ -10,10 +10,10 @@
   },
   "require": {
     "php": ">=7.1",
-    "fabpot/goutte": "^3.2",
+    "fabpot/goutte": "dev-master",
     "psr/log": "^1.0",
-    "illuminate/database": "^5.8 || ^6.0 || ^7.0 || ^8.0",
-    "illuminate/events": "^5.8 || ^6.0 || ^7.0 || ^8.0",
+    "illuminate/database": "^5.8 || ^6.0 || ^7.0 || ^8.0 || ^9.0",
+    "illuminate/events": "^5.8 || ^6.0 || ^7.0 || ^8.0 || ^9.0",
     "ext-dom": "*"
   },
   "require-dev": {
