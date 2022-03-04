@@ -13,6 +13,8 @@ class CreateScrapedDatasetsTable extends Migration
     public function up()
     {
         Schema::create('scraped_datasets', function (Blueprint $table) {
+            $table->charset = 'utf8';
+            $table->collation = 'utf8_unicode_ci';
             $table->string('url', 1024)->primary();
             $table->string('type');
             $table->string('variant', 40)->index()->nullable();
