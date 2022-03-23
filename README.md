@@ -1,3 +1,5 @@
+# Archived repository in favour of [joskfg/laravel-intelligent-scraper](https://github.com/joskfg/laravel-intelligent-scraper)
+
 # Laravel Intelligent Scraper
 
 [![Latest Version](https://img.shields.io/github/release/softonic/laravel-intelligent-scraper.svg?style=flat-square)](https://github.com/softonic/laravel-intelligent-scraper/releases)
